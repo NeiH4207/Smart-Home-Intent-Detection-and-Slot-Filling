@@ -156,11 +156,14 @@ def predict(pred_config):
             inputs = {
                 "input_ids": batch[0],
                 "attention_mask": batch[1],
-                "intent_label_ids": None,
-                "slot_labels_ids": None,
+                "segment_input_ids": batch[3],
+                "segment_attention_mask": batch[4],
+                "intent_label_ids": batch[6],
+                "slot_labels_ids": batch[7],
             }
             if args.model_type != "distilbert":
                 inputs["token_type_ids"] = batch[2]
+                inputs["segment_token_type_ids"] = batch[5]
             outputs = model(**inputs)
             _, (intent_logits, slot_logits) = outputs[:2]
 

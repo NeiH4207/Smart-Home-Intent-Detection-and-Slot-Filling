@@ -67,14 +67,23 @@ class JointPhoBERT(RobertaPreTrainedModel):
             args.attention_embedding_size, args.attention_embedding_size, args.dropout_rate
         )
         
-        self.intent_classifier = IntentClassifier(config.hidden_size + args.attention_embedding_size, self.num_intent_labels, args.dropout_rate)
+        self.intent_classifier = IntentClassifier(config.hidden_size + 2 * args.attention_embedding_size, self.num_intent_labels, args.dropout_rate)
         
         self._intent_gate_linear = nn.Linear(
             config.hidden_size + args.attention_embedding_size + self.num_intent_labels, args.attention_embedding_size
         )
         
+        self._lstm_slot_layer = nn.LSTM(
+            input_size=config.hidden_size + args.attention_embedding_size,
+            hidden_size=config.hidden_size // 2,
+            batch_first=True,
+            num_layers=1,
+            bidirectional=True,
+            dropout=args.dropout_rate
+        )
+        
         self.slot_classifier = SlotClassifier(
-            config.hidden_size + args.attention_embedding_size,
+            config.hidden_size,
             self.num_intent_labels,
             self.num_slot_labels,
             self.args.use_intent_context_concat,
@@ -91,15 +100,22 @@ class JointPhoBERT(RobertaPreTrainedModel):
         self.rule_matrix = torch.FloatTensor(self.rule_matrix)
         self.alpha = 0.5
         
-    def forward(self, input_ids, attention_mask, token_type_ids, intent_label_ids, slot_labels_ids):
+    def forward(self, input_ids, attention_mask, token_type_ids, 
+                segment_input_ids, segment_attention_mask, segment_token_type_ids,
+                intent_label_ids, slot_labels_ids):
+        # intent_outputs = self.roberta(
+        #     segment_input_ids, attention_mask=segment_attention_mask, token_type_ids=segment_token_type_ids
+        # )
+        
         outputs = self.roberta(
             input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids
         )  # sequence_output, pooled_output, (hidden_states), (attentions)
         # embedding_x = self._embedding_layer(input_ids)
         attention_x = self._e_attention(outputs[0])
-        lstm_hidden, _ = self._lstm_layer(attention_x)
+        lstm_hidden, (hn, cn) = self._lstm_layer(attention_x)
+        hn = torch.cat((hn[0], hn[1]), dim=-1)
         pool_hidden = torch.max(lstm_hidden, dim=1, keepdim=True).values
-        pool_hidden = torch.cat((outputs.pooler_output, pool_hidden.squeeze(1)), dim=-1).unsqueeze(1)
+        pool_hidden = torch.cat((hn, outputs.pooler_output, pool_hidden.squeeze(1)), dim=-1).unsqueeze(1)
         linear_intent = self.intent_classifier(pool_hidden)
         intent_logits = F.log_softmax(linear_intent.squeeze(1), dim=-1)
         rep_intent = torch.cat([linear_intent] * input_ids.size(1), dim=1)
@@ -108,7 +124,7 @@ class JointPhoBERT(RobertaPreTrainedModel):
         lin_hidden = self._intent_gate_linear(com_hidden)
         gated_hidden = lin_hidden * lstm_hidden
         sequence_output = torch.cat((outputs[0], gated_hidden), dim=-1)
-
+        sequence_output = self._lstm_slot_layer(sequence_output)[0]
         # linear_slot = self._slot_linear(gated_hidden)
         # slot_logits = F.log_softmax(linear_slot, dim=-1)    
         # sequence_output = outputs[0]

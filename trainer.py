@@ -10,9 +10,7 @@ from tqdm.auto import tqdm, trange
 from transformers import AdamW, get_linear_schedule_with_warmup
 from utils import MODEL_CLASSES, compute_metrics, get_intent_labels, get_slot_labels
 
-
 logger = logging.getLogger(__name__)
-
 
 class Trainer(object):
     def __init__(self, args, train_dataset=None, dev_dataset=None, test_dataset=None):
@@ -111,11 +109,14 @@ class Trainer(object):
                 inputs = {
                     "input_ids": batch[0],
                     "attention_mask": batch[1],
-                    "intent_label_ids": batch[3],
-                    "slot_labels_ids": batch[4],
+                    "segment_input_ids": batch[3],
+                    "segment_attention_mask": batch[4],
+                    "intent_label_ids": batch[6],
+                    "slot_labels_ids": batch[7],
                 }
                 if self.args.model_type != "distilbert":
                     inputs["token_type_ids"] = batch[2]
+                    inputs["segment_token_type_ids"] = batch[5]
                 outputs = self.model(**inputs)
                 loss = outputs[0]
 
@@ -200,11 +201,14 @@ class Trainer(object):
                 inputs = {
                     "input_ids": batch[0],
                     "attention_mask": batch[1],
-                    "intent_label_ids": batch[3],
-                    "slot_labels_ids": batch[4],
+                    "segment_input_ids": batch[3],
+                    "segment_attention_mask": batch[4],
+                    "intent_label_ids": batch[6],
+                    "slot_labels_ids": batch[7],
                 }
                 if self.args.model_type != "distilbert":
                     inputs["token_type_ids"] = batch[2]
+                    inputs["segment_token_type_ids"] = batch[5]
                 outputs = self.model(**inputs)
                 tmp_eval_loss, (intent_logits, slot_logits) = outputs[:2]
 
