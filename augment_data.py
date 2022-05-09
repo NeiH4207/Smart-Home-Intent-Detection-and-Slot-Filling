@@ -6,7 +6,8 @@ from __future__ import division
 import argparse
 from copy import deepcopy
 import logging
-from data_loader import DataLoader
+import os
+from src.data_loader import DataLoader
 log = logging.getLogger(__name__)
 
 from src.data_helper import *
