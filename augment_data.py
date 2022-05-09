@@ -58,9 +58,9 @@ def main():
     data_loader.make_dict(data_loader.dataset['val'])
         
     agumented_train_dataset = data_loader.augment(data_loader.dataset['train'],
-                                                  merge=True, drop_rate=1.0, change_rate=0.5, K=8)
+                                                  merge=True, drop_rate=1.0, change_rate=1.0, K=4)
     agumented_val_dataset = data_loader.augment(data_loader.dataset['val'], 
-                                                merge=False, drop_rate=1.0, change_rate=0.5,K=8)
+                                                merge=False, drop_rate=1.0, change_rate=1.0,K=2)
     agumented_train_val_dataset = deepcopy(agumented_train_dataset)
     
     for sentence, intent, slots in zip(agumented_val_dataset['data'], 
@@ -70,11 +70,11 @@ def main():
         agumented_train_val_dataset['intent_label'].append(intent)
         agumented_train_val_dataset['slot_label'].append(slots)
         
-    data_loader.dump(path='BKAI/word-level/augment_train',
-                     dataset=agumented_train_dataset)
+    # data_loader.dump(path='BKAI/word-level/augment_train',
+    #                  dataset=agumented_train_dataset)
     data_loader.dump(path='BKAI/word-level/augment_val',
                      dataset=agumented_val_dataset)
-    data_loader.dump(path='BKAI/word-level/augment_train_val_plus',
-                     dataset=agumented_train_val_dataset)
+    # data_loader.dump(path='BKAI/word-level/augment_train_val_plus',
+    #                  dataset=agumented_train_val_dataset)
 if __name__ == '__main__':
     main()
