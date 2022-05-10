@@ -238,12 +238,12 @@ if __name__ == "__main__":
     init_logger()
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--input_file", default="BKAI/word-level/augment_train_val_plus/seq.in", type=str, help="Input file for filterion")
+    parser.add_argument("--input_file", default="BKAI/word-level/augment_val/seq.in", type=str, help="Input file for filterion")
     parser.add_argument("--output_file", default="output/results.csv", type=str, help="Output file for filterion")
     parser.add_argument("--model_dir", default="./trained_models", type=str, help="Path to save, load model")
 
     parser.add_argument("--batch_size", default=32, type=int, help="Batch size for filterion")
-    parser.add_argument("--intent_entropy_threshold", default=0.005, type=float, help="Entropy intent threshold")
+    parser.add_argument("--intent_entropy_threshold", default=0.01, type=float, help="Entropy intent threshold")
     parser.add_argument("--slot_entropy_threshold", default=5.0, type=float, help="Entropy slot threshold")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
 
