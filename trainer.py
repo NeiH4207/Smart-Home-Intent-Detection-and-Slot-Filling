@@ -3,7 +3,7 @@ import os
 
 import numpy as np
 import torch
-from early_stopping import EarlyStopping
+from src.early_stopping import EarlyStopping
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 # from torch.utils.tensorboard import SummaryWriter
 from tqdm.auto import tqdm, trange
