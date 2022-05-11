@@ -10,8 +10,8 @@ def main(args):
     set_seed(args)
     tokenizer = load_tokenizer(args)
 
-    train_dataset = load_and_cache_examples(args, tokenizer, mode="train")
-    dev_dataset = load_and_cache_examples(args, tokenizer, mode="dev")
+    train_dataset = load_and_cache_examples(args, tokenizer, mode="augment_train_val_plus")
+    dev_dataset = load_and_cache_examples(args, tokenizer, mode="augment_val")
     test_dataset = load_and_cache_examples(args, tokenizer, mode="test")
 
     trainer = Trainer(args, train_dataset, dev_dataset, test_dataset)
@@ -117,6 +117,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--use_rule_based",
         default=True,
+        action="store_true",
+        help="Whether to use rule to predict slot",
+    )
+    parser.add_argument(
+        "--use_filter",
+        default=False,
         action="store_true",
         help="Whether to use rule to predict slot",
     )

@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 import os
 
@@ -7,7 +8,9 @@ import torch
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
 from tqdm import tqdm
 from utils import MODEL_CLASSES, get_intent_labels, get_slot_labels, init_logger, load_tokenizer
+from scipy.stats import entropy
 
+import matplotlib.pyplot as plt
 
 logger = logging.getLogger(__name__)
 
@@ -126,109 +129,128 @@ def convert_input_file_to_tensor_dataset(
     return dataset
 
 
-def predict(pred_config):
+def filter(pred_config):
     # load model and args
     args = get_args(pred_config)
     device = get_device(pred_config)
     model = load_model(pred_config, args, device)
     logger.info(args)
-
+    label_file = '/'.join(pred_config.input_file.split('/')[:-1]) + '/label'
+    slots_file = '/'.join(pred_config.input_file.split('/')[:-1]) + '/seq.out'
+    labels = []
+    slots = []
+    with open(label_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            labels.append(line)
+    with open(slots_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            slots.append(line)
+            
     intent_label_lst = get_intent_labels(args)
     slot_label_lst = get_slot_labels(args)
-
+            
     # Convert input file to TensorDataset
     pad_token_label_id = args.ignore_index
     tokenizer = load_tokenizer(args)
     lines = read_input_file(pred_config)
     dataset = convert_input_file_to_tensor_dataset(lines, pred_config, args, tokenizer, pad_token_label_id)
 
-    # Predict
+    # filter
     sampler = SequentialSampler(dataset)
     data_loader = DataLoader(dataset, sampler=sampler, batch_size=pred_config.batch_size)
 
-    all_slot_label_mask = None
-    intent_preds = None
-    slot_preds = None
+    intent_entropies = []
+    slot_entropies = []
 
-    for batch in tqdm(data_loader, desc="Predicting"):
+    for batch in tqdm(data_loader, desc="filtering"):
         batch = tuple(t.to(device) for t in batch)
         with torch.no_grad():
             inputs = {
                 "input_ids": batch[0],
                 "attention_mask": batch[1],
-                "segment_input_ids": batch[3],
-                "segment_attention_mask": batch[4],
-                "intent_label_ids": batch[6],
-                "slot_labels_ids": batch[7],
+                "intent_label_ids": None,
+                "slot_labels_ids": None,
             }
             if args.model_type != "distilbert":
                 inputs["token_type_ids"] = batch[2]
-                inputs["segment_token_type_ids"] = batch[5]
             outputs = model(**inputs)
             _, (intent_logits, slot_logits) = outputs[:2]
 
-            # Intent Prediction
-            if intent_preds is None:
-                intent_preds = intent_logits.detach().cpu().numpy()
-            else:
-                intent_preds = np.append(intent_preds, intent_logits.detach().cpu().numpy(), axis=0)
-
-            # Slot prediction
-            if slot_preds is None:
-                if args.use_crf:
-                    # decode() in `torchcrf` returns list with best index directly
-                    slot_preds = np.array(model.crf.decode(slot_logits))
-                else:
-                    slot_preds = slot_logits.detach().cpu().numpy()
-                all_slot_label_mask = batch[3].detach().cpu().numpy()
-            else:
-                if args.use_crf:
-                    slot_preds = np.append(slot_preds, np.array(model.crf.decode(slot_logits)), axis=0)
-                else:
-                    slot_preds = np.append(slot_preds, slot_logits.detach().cpu().numpy(), axis=0)
-                all_slot_label_mask = np.append(all_slot_label_mask, batch[3].detach().cpu().numpy(), axis=0)
-
-    intent_preds = np.argmax(intent_preds, axis=1)
-
-    if not args.use_crf:
-        slot_preds = np.argmax(slot_preds, axis=2)
-
-    slot_label_map = {i: label for i, label in enumerate(slot_label_lst)}
-    slot_preds_list = [[] for _ in range(slot_preds.shape[0])]
-
-    for i in range(slot_preds.shape[0]):
-        for j in range(slot_preds.shape[1]):
-            if all_slot_label_mask[i, j] != pad_token_label_id:
-                slot_preds_list[i].append(slot_label_map[slot_preds[i][j]])
-
+            intent_probs = np.exp(intent_logits.detach().cpu().numpy())
+            entropies = entropy(intent_probs, axis=1)
+            intent_entropies.extend(entropies)
+            slot_probs = np.exp(slot_logits.detach().cpu().numpy())
+            entropies = np.mean(entropy(slot_probs, axis=2), axis=1)
+            slot_entropies.extend(entropies)
+    
+    # plot entropies two columns graph
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.plot(intent_entropies, label="intent")
+    ax.legend()
+    plt.savefig(pred_config.output_dir + "/intent_entropy.png")
+    plt.close(fig)
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.plot(slot_entropies, label="slot")
+    ax.legend()
+    plt.savefig(pred_config.output_dir + "/slot_entropy.png")
+    plt.close(fig)
     # Write to output file
-    with open(pred_config.output_file.replace('csv', 'txt'), "w", encoding="utf-8") as f1:
-        with open(pred_config.output_file, "w", encoding="utf-8") as f2:
-            for words, slot_preds, intent_pred in zip(lines, slot_preds_list, intent_preds):
-                line = ""
-                line2 = ""
-                for word, pred in zip(words, slot_preds):
-                    if pred == "O":
-                        line = line + word + " "
-                    else:
-                        line = line + "[{}:{}] ".format(word, pred)
-                    line2 = line2 + " {}".format(pred)
-                f1.write("<{}> -> {}\n".format(intent_label_lst[intent_pred], line.strip()))
-                f2.write("{}, {}\n".format(intent_label_lst[intent_pred], line2.strip()))
-                
-    logger.info("Prediction Done!")
+    intent_entropy_threshold = pred_config.intent_entropy_threshold
+    slot_entropy_threshold = pred_config.slot_entropy_threshold
+
+    filter_path = '/'.join(pred_config.input_file.split('/')[:-1]) 
+    filter_intent_input_file = filter_path + '/filtered_seq.in'
+    filter_intent_label_lst_file = filter_path + '/filtered_label'
+    filter_slot_input_file = filter_path + '/filtered_seq.out'
+    
+    before_filtered_reports = {}
+    
+    filtered_reports = {}
+    
+    for intent_label in intent_label_lst:
+        filtered_reports[intent_label] = 0
+        before_filtered_reports[intent_label] = 0
+        
+    max_collect_num = 1499
+        
+    with open(filter_intent_input_file, 'w') as f_intent_input, \
+            open(filter_intent_label_lst_file, 'w') as f_intent_label_lst, \
+            open(filter_slot_input_file, 'w') as f_slot_input:
+        for i in range(len(intent_entropies)):
+            if filtered_reports[labels[i]] > max_collect_num:
+                continue
+            if labels[i] == 'greeting' or intent_entropies[i] < intent_entropy_threshold and \
+                    slot_entropies[i] < slot_entropy_threshold:
+                f_intent_input.write(' '.join(lines[i]) + '\n')
+                f_intent_label_lst.write(labels[i] + '\n')
+                f_slot_input.write(slots[i] + '\n')
+                filtered_reports[labels[i]] += 1    
+            before_filtered_reports[labels[i]] += 1
+    
+    # save reports
+    with open(pred_config.output_dir + "/reports.json", 'w') as f:
+        json.dump(before_filtered_reports, f, indent=4)
+    with open(pred_config.output_dir + "/filtered_reports.json", 'w') as f:
+        json.dump(filtered_reports, f, indent=4)
+    print(json.dumps(filtered_reports, indent=4))
+    logger.info("filterion Done!")
 
 
 if __name__ == "__main__":
     init_logger()
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--input_file", default="BKAI/word-level/test/seq.in", type=str, help="Input file for prediction")
-    parser.add_argument("--output_file", default="output/results.csv", type=str, help="Output file for prediction")
-    parser.add_argument("--model_dir", default="./trained_models", type=str, help="Path to save, load model")
+    parser.add_argument("--input_file", default="BKAI/word-level/augment_train_val_plus/seq.in", type=str, help="Input file for filterion")
+    parser.add_argument("--output_file", default="output/results.csv", type=str, help="Output file for filterion")
+    parser.add_argument("--model_dir", default="./models/filtering_model", type=str, help="Path to save, load model")
 
-    parser.add_argument("--batch_size", default=32, type=int, help="Batch size for prediction")
+    parser.add_argument("--batch_size", default=128, type=int, help="Batch size for filterion")
+    parser.add_argument("--intent_entropy_threshold", default=0.25, type=float, help="Entropy intent threshold")
+    parser.add_argument("--slot_entropy_threshold", default=0.25, type=float, help="Entropy slot threshold")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
 
+    parser.add_argument("--output_dir", default="output/", type=str, help="Output file for filterion")
     pred_config = parser.parse_args()
-    predict(pred_config)
+    filter(pred_config)
