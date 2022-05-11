@@ -6,6 +6,7 @@ import numpy as np
 import torch
 from model import JointPhoBERT, JointXLMR
 from seqeval.metrics import f1_score, precision_score, recall_score, classification_report
+import sklearn.metrics as sklearn_metrics
 from transformers import (
     AutoTokenizer,
     RobertaConfig,
@@ -90,7 +91,7 @@ def get_intent_acc(preds, labels):
     acc = (preds == labels).mean()
     return {
         "intent_acc": acc,
-        "intent_classification_report": classification_report(labels, preds)
+        "intent_classification_report": sklearn_metrics.classification_report(labels, preds)
     }
 
 
