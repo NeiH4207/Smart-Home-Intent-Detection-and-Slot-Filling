@@ -243,6 +243,8 @@ class Trainer(object):
 
         # Intent result
         intent_preds = np.argmax(intent_preds, axis=1)
+        intent_preds_labels = np.array([self.intent_label_lst[intent_pred] for intent_pred in intent_preds])
+        out_intent_labels = np.array([self.intent_label_lst[intent_id] for intent_id in out_intent_label_ids])
 
         # Slot result
         if not self.args.use_crf:
@@ -257,12 +259,15 @@ class Trainer(object):
                     out_slot_label_list[i].append(slot_label_map[out_slot_labels_ids[i][j]])
                     slot_preds_list[i].append(slot_label_map[slot_preds[i][j]])
 
-        total_result = compute_metrics(intent_preds, out_intent_label_ids, slot_preds_list, out_slot_label_list)
+        total_result = compute_metrics(intent_preds_labels, out_intent_labels, slot_preds_list, out_slot_label_list)
         results.update(total_result)
 
         logger.info("***** Eval results *****")
         for key in sorted(results.keys()):
-            logger.info("  %s = %s", key, str(results[key]))
+            if "classification_report" not in key:
+                logger.info("  %s = %s", key, str(results[key]))
+            else:
+                logger.info("  %s =\n %s", key, str(results[key]))
         if mode == "test":
             self.write_evaluation_result("eval_test_results.txt", results)
         elif mode == "dev":
