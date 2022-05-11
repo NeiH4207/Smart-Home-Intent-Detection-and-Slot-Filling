@@ -182,7 +182,7 @@ def filter(pred_config):
             entropies = entropy(intent_probs, axis=1)
             intent_entropies.extend(entropies)
             slot_probs = np.exp(slot_logits.detach().cpu().numpy())
-            entropies = np.sum(entropy(slot_probs, axis=2), axis=1)
+            entropies = np.mean(entropy(slot_probs, axis=2), axis=1)
             slot_entropies.extend(entropies)
     
     # plot entropies two columns graph
@@ -213,10 +213,14 @@ def filter(pred_config):
         filtered_reports[intent_label] = 0
         before_filtered_reports[intent_label] = 0
         
+    max_collect_num = 1499
+        
     with open(filter_intent_input_file, 'w') as f_intent_input, \
             open(filter_intent_label_lst_file, 'w') as f_intent_label_lst, \
             open(filter_slot_input_file, 'w') as f_slot_input:
         for i in range(len(intent_entropies)):
+            if filtered_reports[labels[i]] > max_collect_num:
+                continue
             if labels[i] == 'greeting' or intent_entropies[i] < intent_entropy_threshold and \
                     slot_entropies[i] < slot_entropy_threshold:
                 f_intent_input.write(' '.join(lines[i]) + '\n')
@@ -238,13 +242,13 @@ if __name__ == "__main__":
     init_logger()
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--input_file", default="BKAI/word-level/augment_val/seq.in", type=str, help="Input file for filterion")
+    parser.add_argument("--input_file", default="BKAI/word-level/augment_train_val_plus/seq.in", type=str, help="Input file for filterion")
     parser.add_argument("--output_file", default="output/results.csv", type=str, help="Output file for filterion")
-    parser.add_argument("--model_dir", default="./trained_models", type=str, help="Path to save, load model")
+    parser.add_argument("--model_dir", default="./models/filtering_model", type=str, help="Path to save, load model")
 
-    parser.add_argument("--batch_size", default=32, type=int, help="Batch size for filterion")
-    parser.add_argument("--intent_entropy_threshold", default=0.01, type=float, help="Entropy intent threshold")
-    parser.add_argument("--slot_entropy_threshold", default=5.0, type=float, help="Entropy slot threshold")
+    parser.add_argument("--batch_size", default=128, type=int, help="Batch size for filterion")
+    parser.add_argument("--intent_entropy_threshold", default=0.25, type=float, help="Entropy intent threshold")
+    parser.add_argument("--slot_entropy_threshold", default=0.25, type=float, help="Entropy slot threshold")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
 
     parser.add_argument("--output_dir", default="output/", type=str, help="Output file for filterion")

@@ -224,7 +224,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_file", default="output/results.csv", type=str, help="Output file for prediction")
     parser.add_argument("--model_dir", default="./trained_models", type=str, help="Path to save, load model")
 
-    parser.add_argument("--batch_size", default=32, type=int, help="Batch size for prediction")
+    parser.add_argument("--batch_size", default=4, type=int, help="Batch size for prediction")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
 
     pred_config = parser.parse_args()

@@ -2,7 +2,7 @@ import copy
 import json
 import logging
 import os
-from random import uniform
+from random import shuffle, uniform
 import numpy as np
 
 import torch
@@ -44,7 +44,7 @@ class DataLoader(object):
         self.dictionary = {'prefix': [], 'suffix': []}
         
         self.key_words = ['tăng', 'giảm', 'lên', 'xuống', 'mức', 'sáng', 'màu', 'thêm',
-                    'cấp', 'bật', 'hạ', 'thay', 'đổi']
+                    'cấp', 'bật', 'hạ', 'thay', 'đổi', 'số']
         
     def make_dict(self, dataset):
         for sentence, intent, slots in zip(dataset['data'], dataset['intent_label'], dataset['slot_label']):
@@ -136,11 +136,7 @@ class DataLoader(object):
                 p_word_list.append(p_word)
                 p_slot_list.append(p_slot)
             
-            if 'level' in intent or 'percentage' in intent:
-                k = int(K * 1.25)
-            else:
-                k = K
-            for _ in range(k):
+            for _ in range(K):
                 p_words = []
                 p_slots = []
                 drop_p = uniform(0, 1)
@@ -185,6 +181,13 @@ class DataLoader(object):
                 new_data['intent_label'].append(intent)
                 new_data['slot_label'].append(slots)
                 
+        # shuffle data
+        ids = list(range(len(new_data['data'])))
+        np.random.shuffle(ids)
+        new_data['data'] = [new_data['data'][i] for i in ids]
+        new_data['intent_label'] = [new_data['intent_label'][i] for i in ids]
+        new_data['slot_label'] = [new_data['slot_label'][i] for i in ids]
+        
         return new_data
 
     def dump(self, dataset=None, path=None):

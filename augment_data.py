@@ -58,9 +58,9 @@ def main():
     data_loader.make_dict(data_loader.dataset['val'])
         
     agumented_train_dataset = data_loader.augment(data_loader.dataset['train'],
-                                                  merge=True, drop_rate=1.0, change_rate=1.0, K=4)
+                                                  merge=True, drop_rate=0.5, change_rate=1.0, K=10)
     agumented_val_dataset = data_loader.augment(data_loader.dataset['val'], 
-                                                merge=False, drop_rate=1.0, change_rate=1.0,K=2)
+                                                merge=True, drop_rate=0.5, change_rate=1.0, K=10)
     agumented_train_val_dataset = deepcopy(agumented_train_dataset)
     
     for sentence, intent, slots in zip(agumented_val_dataset['data'], 
@@ -69,12 +69,28 @@ def main():
         agumented_train_val_dataset['data'].append(sentence)
         agumented_train_val_dataset['intent_label'].append(intent)
         agumented_train_val_dataset['slot_label'].append(slots)
+    
+    data_loader.dump(path='BKAI/word-level/augment_train',
+                     dataset=agumented_train_dataset)
+    data_loader.dump(path='BKAI/word-level/augment_train_val_plus',
+                     dataset=agumented_train_val_dataset)
+    
+    agumented_val_dataset = data_loader.augment(data_loader.dataset['val'], 
+                                                merge=False, drop_rate=0.5, change_rate=1.0, K=5)
+    agumented_train_val_dataset = deepcopy(agumented_train_dataset)
+    
+    for sentence, intent, slots in zip(agumented_val_dataset['data'],
+                                        agumented_val_dataset['intent_label'],
+                                        agumented_val_dataset['slot_label']):
+        agumented_train_val_dataset['data'].append(sentence)
+        agumented_train_val_dataset['intent_label'].append(intent)
+        agumented_train_val_dataset['slot_label'].append(slots)
         
-    # data_loader.dump(path='BKAI/word-level/augment_train',
-    #                  dataset=agumented_train_dataset)
     data_loader.dump(path='BKAI/word-level/augment_val',
-                     dataset=agumented_val_dataset)
-    # data_loader.dump(path='BKAI/word-level/augment_train_val_plus',
-    #                  dataset=agumented_train_val_dataset)
+                        dataset=agumented_val_dataset)
+    data_loader.dump(path='BKAI/word-level/augment_train_val',
+                        dataset=agumented_train_val_dataset)
+                    
+    
 if __name__ == '__main__':
     main()

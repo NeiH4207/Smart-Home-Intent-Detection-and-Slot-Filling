@@ -142,6 +142,10 @@ def predict(pred_config):
                 slot_label_lst[i][2:] != slot_label_lst[j][2:]:
                 rule_matrix[i, j] = 0
                 print(slot_label_lst[i], slot_label_lst[j])
+            elif slot_label_lst[i][0] == 'B' and slot_label_lst[j][0] == 'B' and \
+                slot_label_lst[i][2:] == slot_label_lst[j][2:]:
+                rule_matrix[i, j] = 0
+                print(slot_label_lst[i], slot_label_lst[j])
             elif slot_label_lst[i][0] == 'O' and slot_label_lst[j][0] == 'I':
                 rule_matrix[i, j] = 0
                 print(slot_label_lst[i], slot_label_lst[j])
@@ -149,9 +153,9 @@ def predict(pred_config):
                 slot_label_lst[i][2:] != slot_label_lst[j][2:]:
                 rule_matrix[i, j] = 0
                 print(slot_label_lst[i], slot_label_lst[j])
-    
+    print(np.sum(rule_matrix))
     # save to csv 
-    with open('PhoATIS/rule.csv', 'w', encoding='utf-8') as f:
+    with open('BKAI/rule.csv', 'w', encoding='utf-8') as f:
         writer = csv.writer(f, delimiter=',')
         writer.writerows(rule_matrix)
     

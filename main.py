@@ -11,7 +11,7 @@ def main(args):
     tokenizer = load_tokenizer(args)
 
     train_dataset = load_and_cache_examples(args, tokenizer, mode="augment_train_val_plus")
-    dev_dataset = load_and_cache_examples(args, tokenizer, mode="test")
+    dev_dataset = load_and_cache_examples(args, tokenizer, mode="augment_val")
     test_dataset = load_and_cache_examples(args, tokenizer, mode="test")
 
     trainer = Trainer(args, train_dataset, dev_dataset, test_dataset)
