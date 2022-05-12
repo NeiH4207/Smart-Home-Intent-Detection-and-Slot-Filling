@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
 from tqdm import tqdm
-from utils import MODEL_CLASSES, get_intent_labels, get_slot_labels, init_logger, load_tokenizer
+from src.utils import MODEL_CLASSES, get_intent_labels, get_slot_labels, init_logger, load_tokenizer
 
 
 logger = logging.getLogger(__name__)

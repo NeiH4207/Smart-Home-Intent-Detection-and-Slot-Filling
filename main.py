@@ -1,8 +1,8 @@
 import argparse
 
 from src.data_loader import load_and_cache_examples
-from trainer import Trainer
-from utils import MODEL_CLASSES, MODEL_PATH_MAP, init_logger, load_tokenizer, set_seed
+from src.trainer import Trainer
+from src.utils import MODEL_CLASSES, MODEL_PATH_MAP, init_logger, load_tokenizer, set_seed
 
 
 def main(args):
