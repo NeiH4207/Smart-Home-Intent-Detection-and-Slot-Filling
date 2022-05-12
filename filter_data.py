@@ -7,7 +7,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
 from tqdm import tqdm
-from utils import MODEL_CLASSES, get_intent_labels, get_slot_labels, init_logger, load_tokenizer
+from utils import MODEL_CLASSES, get_intent_labels, get_slot_labels, init_logger, load_tokenizer, set_seed
 from scipy.stats import entropy
 
 import matplotlib.pyplot as plt
@@ -30,7 +30,7 @@ def load_model(pred_config, args, device):
 
     try:
         model = MODEL_CLASSES[args.model_type][1].from_pretrained(
-            args.model_dir, args=args, intent_label_lst=get_intent_labels(args), slot_label_lst=get_slot_labels(args)
+            pred_config.model_dir, args=args, intent_label_lst=get_intent_labels(args), slot_label_lst=get_slot_labels(args)
         )
         model.to(device)
         model.eval()
@@ -132,6 +132,7 @@ def convert_input_file_to_tensor_dataset(
 def filter(pred_config):
     # load model and args
     args = get_args(pred_config)
+    set_seed(args)
     device = get_device(pred_config)
     model = load_model(pred_config, args, device)
     logger.info(args)
@@ -213,7 +214,7 @@ def filter(pred_config):
         filtered_reports[intent_label] = 0
         before_filtered_reports[intent_label] = 0
         
-    max_collect_num = 1499
+    max_collect_num = 1115
         
     with open(filter_intent_input_file, 'w') as f_intent_input, \
             open(filter_intent_label_lst_file, 'w') as f_intent_label_lst, \
@@ -242,13 +243,13 @@ if __name__ == "__main__":
     init_logger()
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--input_file", default="BKAI/word-level/augment_train_val_plus/seq.in", type=str, help="Input file for filterion")
+    parser.add_argument("--input_file", default="BKAI/word-level/augment_val/seq.in", type=str, help="Input file for filterion")
     parser.add_argument("--output_file", default="output/results.csv", type=str, help="Output file for filterion")
     parser.add_argument("--model_dir", default="./models/filtering_model", type=str, help="Path to save, load model")
 
     parser.add_argument("--batch_size", default=128, type=int, help="Batch size for filterion")
-    parser.add_argument("--intent_entropy_threshold", default=0.25, type=float, help="Entropy intent threshold")
-    parser.add_argument("--slot_entropy_threshold", default=0.25, type=float, help="Entropy slot threshold")
+    parser.add_argument("--intent_entropy_threshold", default=0.1, type=float, help="Entropy intent threshold")
+    parser.add_argument("--slot_entropy_threshold", default=0.04, type=float, help="Entropy slot threshold")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
 
     parser.add_argument("--output_dir", default="output/", type=str, help="Output file for filterion")

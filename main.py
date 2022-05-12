@@ -48,7 +48,7 @@ if __name__ == "__main__":
     parser.add_argument("--train_batch_size", default=32, type=int, help="Batch size for training.")
     parser.add_argument("--eval_batch_size", default=64, type=int, help="Batch size for evaluation.")
     parser.add_argument(
-        "--max_seq_len", default=35, type=int, help="The maximum total input sequence length after tokenization."
+        "--max_seq_len", default=40, type=int, help="The maximum total input sequence length after tokenization."
     )
     parser.add_argument("--learning_rate", default=5e-5, type=float, help="The initial learning rate for Adam.")
     parser.add_argument(
