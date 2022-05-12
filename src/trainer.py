@@ -45,6 +45,7 @@ class Trainer(object):
             )
         # GPU or CPU
         if torch.cuda.is_available() and not args.no_cuda :
+            self.device = "cuda"
             torch.cuda.set_device(self.args.gpu_id)
             print(self.args.gpu_id)
             print(torch.cuda.current_device())

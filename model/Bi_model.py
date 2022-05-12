@@ -113,8 +113,9 @@ def masked_log_softmax(vector: torch.Tensor, mask: torch.Tensor, dim: int = -1) 
         vector = vector + (mask + 1e-45).log()
     return torch.nn.functional.log_softmax(vector, dim=dim)
 
-def make_mask(real_len, max_len=None, label_size=None, batch=None):
-    mask = torch.zeros(batch, max_len, label_size)
+def make_mask(real_len, max_len=None, label_size=None):
+    batch_size = len(real_len)
+    mask = torch.zeros(batch_size, max_len, label_size)
     for index, item in enumerate(real_len):
         mask[index, :item, :] = 1.0
     return mask
@@ -127,6 +128,7 @@ class BiModel(RobertaPreTrainedModel):
         self.num_slot_labels = len(slot_label_lst)
         self.roberta = RobertaModel(config)  # Load pretrained phobert    
         device = 'cuda' if torch.cuda.is_available() and not args.no_cuda else 'cpu'
+
         self.slot_classifier = Slot(config.hidden_size, config.hidden_size, args.train_batch_size, args.max_seq_len, device, label_size=self.num_slot_labels)
         self.intent_classifier = Intent(config.hidden_size, config.hidden_size, args.train_batch_size, args.max_seq_len, device, label_size=self.num_intent_labels)
         
@@ -145,7 +147,7 @@ class BiModel(RobertaPreTrainedModel):
         outputs = self.roberta(
             input_ids, attention_mask=attention_mask, 
         )
-        mask = make_mask(real_lens,self. args.max_seq_len, self.num_slot_labels, self.args.train_batch_size).to(self.roberta.device)
+        mask = make_mask(real_lens,self. args.max_seq_len, self.num_slot_labels).to(self.roberta.device)
         embed_vecs = outputs[0]
         hs = self.slot_classifier.enc(embed_vecs)
         self.slot_classifier.share_memory = hs.clone()
