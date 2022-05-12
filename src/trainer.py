@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 # from torch.utils.tensorboard import SummaryWriter
 from tqdm.auto import tqdm, trange
 from transformers import AdamW, get_linear_schedule_with_warmup
-from utils import MODEL_CLASSES, compute_metrics, get_intent_labels, get_slot_labels
+from src.utils import MODEL_CLASSES, compute_metrics, get_intent_labels, get_slot_labels
 
 logger = logging.getLogger(__name__)
 
@@ -44,10 +44,12 @@ class Trainer(object):
                 slot_label_lst=self.slot_label_lst,
             )
         # GPU or CPU
-        torch.cuda.set_device(self.args.gpu_id)
-        print(self.args.gpu_id)
-        print(torch.cuda.current_device())
-        self.device = "cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu"
+        if torch.cuda.is_available() and not args.no_cuda :
+            torch.cuda.set_device(self.args.gpu_id)
+            print(self.args.gpu_id)
+            print(torch.cuda.current_device())
+        else:
+            self.device = "cpu"
         self.model.to(self.device)
 
     def train(self):
@@ -111,6 +113,7 @@ class Trainer(object):
                     "attention_mask": batch[1],
                     "intent_label_ids": batch[3],
                     "slot_labels_ids": batch[4],
+                    "real_lens": batch[5],
                 }
                 if self.args.model_type != "distilbert":
                     inputs["token_type_ids"] = batch[2]
@@ -200,6 +203,7 @@ class Trainer(object):
                     "attention_mask": batch[1],
                     "intent_label_ids": batch[3],
                     "slot_labels_ids": batch[4],
+                    "real_lens": batch[5],
                 }
                 if self.args.model_type != "distilbert":
                     inputs["token_type_ids"] = batch[2]
@@ -243,6 +247,8 @@ class Trainer(object):
 
         # Intent result
         intent_preds = np.argmax(intent_preds, axis=1)
+        intent_preds_labels = np.array([self.intent_label_lst[intent_pred] for intent_pred in intent_preds])
+        out_intent_labels = np.array([self.intent_label_lst[intent_id] for intent_id in out_intent_label_ids])
 
         # Slot result
         if not self.args.use_crf:
@@ -257,12 +263,15 @@ class Trainer(object):
                     out_slot_label_list[i].append(slot_label_map[out_slot_labels_ids[i][j]])
                     slot_preds_list[i].append(slot_label_map[slot_preds[i][j]])
 
-        total_result = compute_metrics(intent_preds, out_intent_label_ids, slot_preds_list, out_slot_label_list)
+        total_result = compute_metrics(intent_preds_labels, out_intent_labels, slot_preds_list, out_slot_label_list)
         results.update(total_result)
 
         logger.info("***** Eval results *****")
         for key in sorted(results.keys()):
-            logger.info("  %s = %s", key, str(results[key]))
+            if "classification_report" not in key:
+                logger.info("  %s = %s", key, str(results[key]))
+            else:
+                logger.info("  %s =\n %s", key, str(results[key]))
         if mode == "test":
             self.write_evaluation_result("eval_test_results.txt", results)
         elif mode == "dev":

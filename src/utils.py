@@ -4,8 +4,9 @@ import random
 
 import numpy as np
 import torch
-from model import JointPhoBERT, JointXLMR
-from seqeval.metrics import f1_score, precision_score, recall_score
+from model import JointPhoBERT, JointXLMR, BiModel
+from seqeval.metrics import f1_score, precision_score, recall_score, classification_report
+import sklearn.metrics as sklearn_metrics
 from transformers import (
     AutoTokenizer,
     RobertaConfig,
@@ -17,11 +18,13 @@ from transformers import (
 MODEL_CLASSES = {
     "xlmr": (XLMRobertaConfig, JointXLMR, XLMRobertaTokenizer),
     "phobert": (RobertaConfig, JointPhoBERT, AutoTokenizer),
+    'bimodel': (RobertaConfig, BiModel, AutoTokenizer)
 }
 
 MODEL_PATH_MAP = {
     "xlmr": "xlm-roberta-base",
     "phobert": "vinai/phobert-base",
+    "bimodel": "vinai/phobert-base"
 }
 
 
@@ -82,12 +85,16 @@ def get_slot_metrics(preds, labels):
         "slot_precision": precision_score(labels, preds),
         "slot_recall": recall_score(labels, preds),
         "slot_f1": f1_score(labels, preds),
+        "slot_classification_report": classification_report(labels, preds)
     }
 
 
 def get_intent_acc(preds, labels):
     acc = (preds == labels).mean()
-    return {"intent_acc": acc}
+    return {
+        "intent_acc": acc,
+        "intent_classification_report": sklearn_metrics.classification_report(labels, preds)
+    }
 
 
 def read_prediction_text(args):
