@@ -221,7 +221,7 @@ def filter(pred_config):
         slot_filtered_reports[slot_label] = 0
         before_slot_filtered_reports[slot_label] = 0
         
-    max_collect_num = 1200
+    max_collect_num = args.max_collect_num
         
     with open(filter_intent_input_file, 'w') as f_intent_input, \
             open(filter_intent_label_lst_file, 'w') as f_intent_label_lst, \
@@ -233,11 +233,11 @@ def filter(pred_config):
             if labels[i] in ['smart.home.decrease.level']:
                 temp_intent_entropy_threshold *= 2
                 temp_slot_entropy_threshold *= 2
-                temp_max_collect_num *= 1.2
+                temp_max_collect_num *= 1.3
             if labels[i] in ['smart.home.increase.level', 'smart.home.set.level']:
                 temp_intent_entropy_threshold *= 1.5
                 temp_slot_entropy_threshold *= 1.5
-                temp_max_collect_num *= 1.1
+                temp_max_collect_num *= 1.25
             if intent_filtered_reports[labels[i]] > temp_max_collect_num:
                 continue
             if labels[i] == 'greeting' or intent_entropies[i] < temp_intent_entropy_threshold and \
@@ -280,7 +280,7 @@ if __name__ == "__main__":
     parser.add_argument("--intent_entropy_threshold", default=1.0, type=float, help="Entropy intent threshold")
     parser.add_argument("--slot_entropy_threshold", default=1.0, type=float, help="Entropy slot threshold")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
-
+    parser.add_argument("--max_collect_num", default=1200, type=int, help="Max collect num")
     parser.add_argument("--output_dir", default="output/", type=str, help="Output file for filterion")
     pred_config = parser.parse_args()
     filter(pred_config)
