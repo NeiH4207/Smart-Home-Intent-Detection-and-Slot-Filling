@@ -10,9 +10,9 @@ def main(args):
     set_seed(args)
     tokenizer = load_tokenizer(args)
 
-    train_dataset = load_and_cache_examples(args, tokenizer, mode="augment_train_val_plus")
-    dev_dataset = load_and_cache_examples(args, tokenizer, mode="augment_val")
-    test_dataset = load_and_cache_examples(args, tokenizer, mode="test")
+    train_dataset = load_and_cache_examples(args, tokenizer, mode=args.train_type)
+    dev_dataset = load_and_cache_examples(args, tokenizer, mode=args.val_type)
+    test_dataset = load_and_cache_examples(args, tokenizer, mode=args.test_type)
 
     trainer = Trainer(args, train_dataset, dev_dataset, test_dataset)
 
@@ -75,8 +75,8 @@ if __name__ == "__main__":
     parser.add_argument("--logging_steps", type=int, default=200, help="Log every X updates steps.")
     parser.add_argument("--save_steps", type=int, default=200, help="Save checkpoint every X updates steps.")
 
-    parser.add_argument("--do_train", default=True, action="store_true", help="Whether to run training.")
-    parser.add_argument("--do_eval", default=True, action="store_true", help="Whether to run eval on the test set.")
+    parser.add_argument("--do_train", action="store_true", help="Whether to run training.")
+    parser.add_argument("--do_eval", action="store_true", help="Whether to run eval on the test set.")
     parser.add_argument("--do_eval_dev", action="store_true", help="Whether to run eval on the dev set.")
 
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
@@ -146,6 +146,10 @@ if __name__ == "__main__":
     )
     parser.add_argument("--use_attention_mask", action="store_true", help="Whether to use attention mask")
 
+    parser.add_argument("--train_type", default="train", type=str, help="Train type")
+    parser.add_argument("--val_type", default="dev", type=str, help="Eval type")
+    parser.add_argument("--test_type", default="dev", type=str, help="Eval type")
+    
     args = parser.parse_args()
     args.eval_batch_size = args.train_batch_size
     args.model_name_or_path = MODEL_PATH_MAP[args.model_type]
