@@ -33,6 +33,8 @@ def parse_args():
                         help='name of the intent label file')
     parser.add_argument('--slot-label-file', type=str, default='train/slot_label.txt',
                         help='name of the slot label file')
+    parser.add_argument('-k', '--K', type=int, default=7,
+                        help='number of generated examples')
     
     args = parser.parse_args()
     args.intent_label_file = os.path.join(args.dataset_path, args.intent_label_file)
