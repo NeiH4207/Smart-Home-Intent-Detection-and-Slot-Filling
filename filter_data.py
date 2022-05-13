@@ -274,7 +274,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--input_file", default="BKAI/word-level/augment_train_val_plus/seq.in", type=str, help="Input file for filterion")
-    parser.add_argument("--output_file", default="output/results.csv", type=str, help="Output file for filterion")
     parser.add_argument("--model_dir", default="./models/filtering_model", type=str, help="Path to save, load model")
 
     parser.add_argument("--batch_size", default=128, type=int, help="Batch size for filterion")

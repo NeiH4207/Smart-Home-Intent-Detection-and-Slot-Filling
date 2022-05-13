@@ -13,8 +13,6 @@ from matplotlib import pyplot as plt
 from src.data_loader import DataLoader
 log = logging.getLogger(__name__)
 
-from src.data_helper import *
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset-path', type=str, default='BKAI/word-level',

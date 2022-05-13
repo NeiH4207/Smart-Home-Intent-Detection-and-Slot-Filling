@@ -5,8 +5,7 @@ import os
 
 import numpy as np
 import torch
-from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
-from tqdm import tqdm
+from torch.utils.data import TensorDataset
 from src.utils import MODEL_CLASSES, get_intent_labels, get_slot_labels, init_logger, load_tokenizer
 
 
