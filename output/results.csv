@@ -94,7 +94,7 @@ smart.home.check.status, O O O O B-devicedevice I-devicedevice I-devicedevice O
 smart.home.check.status, O O O O B-devicedevice I-devicedevice O B-roomroom I-roomroom I-roomroom O O O O O
 smart.home.check.status, O O O O B-devicedevice O
 smart.home.check.status, O O O O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O O O O O O O
-smart.home.check.status, O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O O O
+smart.home.check.status, B-commandcommand I-commandcommand B-devicedevice I-devicedevice I-devicedevice I-devicedevice O O O
 smart.home.check.status, O O O O O O O O B-devicedevice I-devicedevice I-devicedevice O B-roomroom I-roomroom I-roomroom O
 smart.home.check.status, O O O O B-devicedevice
 smart.home.check.status, O O O O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O O O O O O O
@@ -119,7 +119,7 @@ smart.home.check.status, B-devicedevice I-devicedevice B-statusstatus I-statusst
 smart.home.check.status, O O O O B-devicedevice I-devicedevice I-devicedevice
 smart.home.check.status, O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-roomroom I-roomroom O O O O O O O O O
 smart.home.check.status, B-devicedevice I-devicedevice I-devicedevice B-statusstatus I-statusstatus I-statusstatus O
-smart.home.check.status, O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O O O
+smart.home.check.status, B-commandcommand I-commandcommand B-devicedevice I-devicedevice I-devicedevice I-devicedevice O O O
 smart.home.check.status, O O O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O
 smart.home.check.status, O O O O O O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-roomroom I-roomroom I-roomroom I-roomroom O
 smart.home.check.status, O O O O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice I-devicedevice O O O O O O O
@@ -191,7 +191,7 @@ smart.home.set.percentage, O B-commandcommand O O B-devicedevice O B-roomroom I-
 smart.home.set.percentage, B-commandcommand B-devicedevice I-devicedevice O O B-final-valuesyspercentage I-final-valuesyspercentage I-final-valuesyspercentage O O
 smart.home.set.percentage, O O B-commandcommand I-commandcommand B-devicedevice I-devicedevice I-devicedevice I-devicedevice
 smart.home.set.color, O B-commandcommand O O B-devicedevice I-devicedevice O B-colorcolor O
-smart.home.set.color, O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-colorcolor I-colorcolor O O O
+smart.home.set.color, O B-commandcommand B-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-colorcolor I-colorcolor O O O
 smart.home.set.color, B-commandcommand I-commandcommand B-colorcolor I-colorcolor O B-devicedevice I-devicedevice I-devicedevice I-devicedevice I-devicedevice B-roomroom I-roomroom I-roomroom I-roomroom B-floornumberfloornumber I-floornumberfloornumber I-floornumberfloornumber
 smart.home.set.color, O O O B-commandcommand I-commandcommand O O B-devicedevice I-devicedevice I-devicedevice O O B-colorcolor I-colorcolor O
 smart.home.set.color, O O O B-commandcommand O O B-devicedevice I-devicedevice I-devicedevice O B-colorcolor I-colorcolor O
@@ -202,7 +202,7 @@ smart.home.set.color, O B-commandcommand I-commandcommand B-devicedevice I-devic
 smart.home.set.color, O B-commandcommand O B-devicedevice I-devicedevice I-devicedevice O B-colorcolor I-colorcolor O
 smart.home.set.color, O O B-commandcommand I-commandcommand B-devicedevice I-devicedevice I-devicedevice O B-colorcolor
 smart.home.set.color, O O O O B-commandcommand I-commandcommand O O B-devicedevice I-devicedevice O B-colorcolor I-colorcolor
-smart.home.set.color, O O O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-colorcolor I-colorcolor O
+smart.home.set.color, O B-commandcommand O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-colorcolor I-colorcolor O
 smart.home.set.color, O B-commandcommand I-commandcommand B-devicedevice I-devicedevice I-devicedevice O B-colorcolor I-colorcolor O O O
 smart.home.set.color, O O O O B-devicedevice I-devicedevice I-devicedevice O B-colorcolor I-colorcolor O
 smart.home.set.color, O B-commandcommand I-commandcommand O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-colorcolor O
@@ -218,13 +218,13 @@ smart.home.set.color, O O O O B-commandcommand I-commandcommand I-commandcommand
 smart.home.set.color, O O O B-commandcommand O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-colorcolor I-colorcolor O
 smart.home.set.color, O O B-commandcommand I-commandcommand B-devicedevice I-devicedevice O B-colorcolor I-colorcolor
 smart.home.set.color, B-commandcommand I-commandcommand B-colorcolor O B-devicedevice I-devicedevice I-devicedevice I-devicedevice B-roomroom I-roomroom I-roomroom B-floornumberfloornumber
-smart.home.set.color, O O O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-colorcolor I-colorcolor I-colorcolor O
+smart.home.set.color, O B-commandcommand O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-colorcolor I-colorcolor I-colorcolor O
 smart.home.set.color, B-devicedevice I-devicedevice I-devicedevice B-commandcommand I-commandcommand B-colorcolor I-colorcolor
-smart.home.set.color, O O B-devicedevice I-devicedevice I-devicedevice O B-colorcolor I-colorcolor O O O
+smart.home.set.color, O B-commandcommand B-devicedevice I-devicedevice I-devicedevice O B-colorcolor I-colorcolor O O O
 smart.home.set.color, B-devicedevice I-devicedevice I-devicedevice I-devicedevice B-commandcommand B-colorcolor I-colorcolor
 smart.home.set.color, O O O O B-commandcommand I-commandcommand O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-colorcolor
 smart.home.set.color, B-devicedevice I-devicedevice I-devicedevice I-devicedevice B-commandcommand B-colorcolor I-colorcolor
-smart.home.set.color, O O O O B-devicedevice I-devicedevice I-devicedevice O B-colorcolor I-colorcolor I-colorcolor O
+smart.home.set.color, O B-commandcommand O O B-devicedevice I-devicedevice I-devicedevice O B-colorcolor I-colorcolor I-colorcolor O
 smart.home.set.color, O O O O B-commandcommand I-commandcommand O B-devicedevice I-devicedevice I-devicedevice O O O
 smart.home.set.color, O O O O B-commandcommand I-commandcommand O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O O O
 smart.home.set.color, O O O B-commandcommand O O B-devicedevice I-devicedevice I-devicedevice O O B-colorcolor I-colorcolor O
