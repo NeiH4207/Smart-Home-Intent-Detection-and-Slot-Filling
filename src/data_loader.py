@@ -7,7 +7,7 @@ import numpy as np
 
 import torch
 from torch.utils.data import TensorDataset
-from utils import get_intent_labels, get_slot_labels
+from src.utils import get_intent_labels, get_slot_labels
 
 
 logger = logging.getLogger(__name__)
@@ -51,39 +51,42 @@ class DataLoader(object):
                 (['chỉ', '1', 'chút', 'thôi','nhé'], ['O', 'O', 'O', 'O', 'O']),
                 (['để', 'tôi', 'tắm'], ['O', 'O', 'O']),
                 ],
-            'smart.home.check.status': [
-                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
-                (['báo', 'cáo'], ['B-commandcommand', 'I-commandcommand'])
+            ('smart.home.check.status', 'B-allall'): [
+                (['toàn', 'bộ'], ['B-allall', 'I-allall'])
                 ],
-            'smart.home.device.onoff': [
+            ('smart.home.device.onoff', 'B-allall'): [
                 
             ],
             
-            'smart.home.set.color': [
+            ('smart.home.check.status', 'B-commandcommand'): [
+                (['báo', 'cáo'], ['B-commandcommand', 'I-commandcommand'])
+            ],
+            
+            ('smart.home.set.color', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall'])
             ],
-            'smart.home.set.level': [
+            ('smart.home.set.level', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
                 (['ánh', 'sáng'], ['B-devicedevice', 'I-devicedevice']),
             ], 
-            'smart.home.set.percentage': [
+            ('smart.home.set.percentage', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
             ],
-            'smart.home.increase.level': [
+            ('smart.home.increase.level', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
             ],
-            'smart.home.increase.percentage': [
+            ('smart.home.increase.percentage', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
             ],
-            'smart.home.decrease.level': [
+            ('smart.home.decrease.level', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
             ],
-            'smart.home.decrease.percentage': [
+            ('smart.home.decrease.percentage', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
             ]
         }
         
-        self.key_words = ['tăng', 'giảm', 'lên', 'xuống', 'mức', 'sáng', 'màu', 'thêm',
+        self.key_words = ['tăng', 'giảm', 'lên', 'xuống', 'mức', 'hơi', 'sáng', 'màu', 'thêm',
                     'cấp', 'bật', 'hạ', 'thay', 'đổi', 'số', 'chỉnh', 'điều']
         
     def make_dict(self, dataset):
@@ -125,7 +128,8 @@ class DataLoader(object):
                 if (intent, p_slots[0]) not in self.dictionary:
                     self.dictionary[(intent, p_slots[0])] = [(p_words, p_slots)]
                 else:
-                    self.dictionary[(intent, p_slots[0])].append((p_words, p_slots))
+                    if (p_words, p_slots) not in self.dictionary[(intent, p_slots[0])]:
+                        self.dictionary[(intent, p_slots[0])].append((p_words, p_slots))
             if intent != 'greeting':
                 _n_suffix = 0
                 for i, slot in enumerate(slots[::-1][1:]):
@@ -222,11 +226,11 @@ class DataLoader(object):
                 new_data['slot_label'].append(slots)
                 
         # shuffle data
-        ids = list(range(len(new_data['data'])))
-        np.random.shuffle(ids)
-        new_data['data'] = [new_data['data'][i] for i in ids]
-        new_data['intent_label'] = [new_data['intent_label'][i] for i in ids]
-        new_data['slot_label'] = [new_data['slot_label'][i] for i in ids]
+        # ids = list(range(len(new_data['data'])))
+        # np.random.shuffle(ids)
+        # new_data['data'] = [new_data['data'][i] for i in ids]
+        # new_data['intent_label'] = [new_data['intent_label'][i] for i in ids]
+        # new_data['slot_label'] = [new_data['slot_label'][i] for i in ids]
         
         return new_data
 
