@@ -1,6 +1,6 @@
 import logging
 import os
-
+from torch import nn
 import numpy as np
 import torch
 from src.early_stopping import EarlyStopping
@@ -44,10 +44,13 @@ class Trainer(object):
                 slot_label_lst=self.slot_label_lst,
             )
         # GPU or CPU
-        torch.cuda.set_device(self.args.gpu_id)
-        print(self.args.gpu_id)
-        print(torch.cuda.current_device())
-        self.device = "cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu"
+        if torch.cuda.is_available() and not args.no_cuda :
+            self.device = "cuda"
+            torch.cuda.set_device(self.args.gpu_id)
+            print(self.args.gpu_id)
+            print(torch.cuda.current_device())
+        else:
+            self.device = "cpu"
         self.model.to(self.device)
 
     def train(self):
@@ -111,12 +114,15 @@ class Trainer(object):
                     "attention_mask": batch[1],
                     "intent_label_ids": batch[3],
                     "slot_labels_ids": batch[4],
+                    "real_lens": batch[5],
                 }
                 if self.args.model_type != "distilbert":
                     inputs["token_type_ids"] = batch[2]
                 outputs = self.model(**inputs)
                 loss = outputs[0]
-
+                # clip gradient
+                nn.utils.clip_grad_norm_(self.model.parameters(), 
+                                         self.args.max_grad_norm)
                 if self.args.gradient_accumulation_steps > 1:
                     loss = loss / self.args.gradient_accumulation_steps
 
@@ -200,6 +206,7 @@ class Trainer(object):
                     "attention_mask": batch[1],
                     "intent_label_ids": batch[3],
                     "slot_labels_ids": batch[4],
+                    "real_lens": batch[5],
                 }
                 if self.args.model_type != "distilbert":
                     inputs["token_type_ids"] = batch[2]

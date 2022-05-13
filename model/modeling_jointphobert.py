@@ -67,7 +67,8 @@ class JointPhoBERT(RobertaPreTrainedModel):
             args.attention_embedding_size, args.attention_embedding_size, args.dropout_rate
         )
         
-        self.intent_classifier = IntentClassifier(config.hidden_size + 2 * args.attention_embedding_size, self.num_intent_labels, args.dropout_rate)
+        self.intent_classifier = IntentClassifier(config.hidden_size + 2 * args.attention_embedding_size, 
+                                                  self.num_intent_labels, args.dropout_rate)
         
         self._intent_gate_linear = nn.Linear(
             args.attention_embedding_size + self.num_intent_labels, args.attention_embedding_size
@@ -101,7 +102,7 @@ class JointPhoBERT(RobertaPreTrainedModel):
         self.alpha = 0.5
         
     def forward(self, input_ids, attention_mask, token_type_ids, 
-                intent_label_ids, slot_labels_ids):
+                intent_label_ids, slot_labels_ids, real_lens):
         outputs = self.roberta(
             input_ids, attention_mask=attention_mask, 
         )
@@ -167,8 +168,9 @@ class JointPhoBERT(RobertaPreTrainedModel):
             total_loss += (1 - self.args.intent_loss_coef) * slot_loss
 
         if self.args.use_rule_based:
-            slot_probs = torch.exp(slot_logits).permute(1, 0, 2)
+            slot_probs = torch.exp(slot_logits.permute(1, 0, 2))
             num_words = slot_probs.shape[0]
+            # mse_loss_fct = nn.MSELoss()
             for T in range(num_words):
                 if T == 0:
                     continue
@@ -176,6 +178,7 @@ class JointPhoBERT(RobertaPreTrainedModel):
                 onehot_vec = F.one_hot(argmax_idx, self.num_slot_labels).float()
                 slot_probs[T] *= torch.matmul(onehot_vec, self.rule_matrix.to(self.device))
                 slot_probs[T] /= torch.sum(slot_probs[T], dim=1, keepdim=True)
+                # total_loss += mse_loss_fct(slot_probs[T], torch.exp(slot_logits.permute(1, 0, 2)[T]))
             slot_logits = torch.log(slot_probs.permute(1, 0, 2))
             
         outputs = ((intent_logits, slot_logits),) + outputs[2:]  # add hidden states and attention if they are here
