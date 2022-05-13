@@ -39,9 +39,9 @@ class Embedding(nn.Module):
     def forward(self, input):
         return self.embedding(input)
 
-class JointPhoBERT(RobertaPreTrainedModel):
+class JointGLU(RobertaPreTrainedModel):
     def __init__(self, config, args, intent_label_lst, slot_label_lst):
-        super(JointPhoBERT, self).__init__(config)
+        super(JointGLU, self).__init__(config)
         self.args = args
         self.num_intent_labels = len(intent_label_lst)
         self.num_slot_labels = len(slot_label_lst)

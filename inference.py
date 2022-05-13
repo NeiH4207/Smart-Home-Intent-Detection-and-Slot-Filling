@@ -9,6 +9,21 @@ from tqdm import tqdm
 from src.utils import MODEL_CLASSES, get_intent_labels, get_slot_labels, init_logger, load_tokenizer
 
 
+def parse_args():
+    
+    init_logger()
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--input_file", default="BKAI/word-level/test/seq.in", type=str, help="Input file for prediction")
+    parser.add_argument("--output_file", default="output/results.csv", type=str, help="Output file for prediction")
+    parser.add_argument("--model_dir", default="./trained_models", type=str, help="Path to save, load model")
+
+    parser.add_argument("--batch_size", default=4, type=int, help="Batch size for prediction")
+    parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
+
+    pred_config = parser.parse_args()
+    return pred_config
+
 logger = logging.getLogger(__name__)
 
 
@@ -130,7 +145,8 @@ def convert_input_file_to_tensor_dataset(
     return dataset
 
 
-def predict(pred_config):
+def main():
+    pred_config = parse_args()
     # load model and args
     args = get_args(pred_config)
     device = get_device(pred_config)
@@ -222,15 +238,4 @@ def predict(pred_config):
 
 
 if __name__ == "__main__":
-    init_logger()
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument("--input_file", default="BKAI/word-level/test/seq.in", type=str, help="Input file for prediction")
-    parser.add_argument("--output_file", default="output/results.csv", type=str, help="Output file for prediction")
-    parser.add_argument("--model_dir", default="./trained_models", type=str, help="Path to save, load model")
-
-    parser.add_argument("--batch_size", default=4, type=int, help="Batch size for prediction")
-    parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
-
-    pred_config = parser.parse_args()
-    predict(pred_config)
+    main()
