@@ -221,7 +221,7 @@ def filter(pred_config):
         slot_filtered_reports[slot_label] = 0
         before_slot_filtered_reports[slot_label] = 0
         
-    max_collect_num = args.max_collect_num
+    max_collect_num = pred_config.max_collect_num
         
     with open(filter_intent_input_file, 'w') as f_intent_input, \
             open(filter_intent_label_lst_file, 'w') as f_intent_label_lst, \
@@ -257,15 +257,19 @@ def filter(pred_config):
                 before_slot_filtered_reports[slot] += 1
     
     # save reports
-    with open(pred_config.output_dir + "/reports.json", 'w') as f:
-        json.dump(before_intent_filtered_reports, f, indent=4)
-    with open(pred_config.output_dir + "/filtered_reports.json", 'w') as f:
-        json.dump(intent_filtered_reports, f, indent=4)
+    # with open(pred_config.output_dir + "/reports.json", 'w') as f:
+    #     json.dump(before_intent_filtered_reports, f, indent=4)
+    # with open(pred_config.output_dir + "/filtered_reports.json", 'w') as f:
+    #     json.dump(intent_filtered_reports, f, indent=4)
         
-    with open(pred_config.output_dir + "/slot_reports.json", 'w') as f:
-        json.dump(before_slot_filtered_reports, f, indent=4)
-    with open(pred_config.output_dir + "/filtered_slot_reports.json", 'w') as f:
-        json.dump(slot_filtered_reports, f, indent=4)
+    # with open(pred_config.output_dir + "/slot_reports.json", 'w') as f:
+    #     json.dump(before_slot_filtered_reports, f, indent=4)
+    # with open(pred_config.output_dir + "/filtered_slot_reports.json", 'w') as f:
+    #     json.dump(slot_filtered_reports, f, indent=4)
+    print(before_intent_filtered_reports)
+    print(intent_filtered_reports)
+    print(before_slot_filtered_reports)
+    print(slot_filtered_reports)
     logger.info("filterion Done!")
 
 
