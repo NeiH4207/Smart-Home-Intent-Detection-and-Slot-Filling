@@ -221,7 +221,7 @@ def filter(pred_config):
         slot_filtered_reports[slot_label] = 0
         before_slot_filtered_reports[slot_label] = 0
         
-    max_collect_num = 4000
+    max_collect_num = 1200
         
     with open(filter_intent_input_file, 'w') as f_intent_input, \
             open(filter_intent_label_lst_file, 'w') as f_intent_label_lst, \
@@ -274,7 +274,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--input_file", default="BKAI/word-level/augment_train_val_plus/seq.in", type=str, help="Input file for filterion")
-    parser.add_argument("--model_dir", default="./models/filtering_model", type=str, help="Path to save, load model")
+    parser.add_argument("--model_dir", default="./trained_models/filtering_model", type=str, help="Path to save, load model")
 
     parser.add_argument("--batch_size", default=128, type=int, help="Batch size for filterion")
     parser.add_argument("--intent_entropy_threshold", default=1.0, type=float, help="Entropy intent threshold")
