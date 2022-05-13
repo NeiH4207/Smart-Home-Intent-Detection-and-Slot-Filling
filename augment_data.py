@@ -11,7 +11,7 @@ import os
 
 from matplotlib import pyplot as plt
 from src.data_loader import DataLoader
-from utils import set_seed
+from src.utils import set_seed
 log = logging.getLogger(__name__)
 
 def parse_args():
@@ -38,6 +38,8 @@ def parse_args():
                         help='number of generated examples')
     parser.add_argument('--seed', type=int, default=1,
                         help='number of generated examples')
+    parser.add_argument('--no_cuda', action='store_true', 
+                        help='do not use cuda')
     
     args = parser.parse_args()
     args.intent_label_file = os.path.join(args.dataset_path, args.intent_label_file)
