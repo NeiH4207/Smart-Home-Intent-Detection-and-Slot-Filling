@@ -76,12 +76,7 @@ def main():
                                                   merge=True, drop_rate=0.5,
                                                   change_rate=1.0, K=5)
     agumented_val_dataset = data_loader.augment(data_loader.dataset['val'], 
-<<<<<<< HEAD
                                                 merge=True, drop_rate=0.5, change_rate=1.0, K=10)
-=======
-                                                merge=True, drop_rate=0.5, 
-                                                change_rate=1.0, K=5)
->>>>>>> ca21cd1501ef5d4e91975f348791aa286b686501
     agumented_train_val_plus_dataset = deepcopy(agumented_train_dataset)
     
     for sentence, intent, slots in zip(agumented_val_dataset['data'], 
