@@ -4,7 +4,7 @@ import random
 
 import numpy as np
 import torch
-from model import JointPhoBERT, JointXLMR, BiModel
+from model import JointGLU, JointXLMR, BiModel
 from seqeval.metrics import f1_score, precision_score, recall_score, classification_report
 import sklearn.metrics as sklearn_metrics
 from transformers import (
@@ -17,7 +17,7 @@ from transformers import (
 
 MODEL_CLASSES = {
     "xlmr": (XLMRobertaConfig, JointXLMR, XLMRobertaTokenizer),
-    "phobert": (RobertaConfig, JointPhoBERT, AutoTokenizer),
+    "phobert": (RobertaConfig, JointGLU, AutoTokenizer),
     'bimodel': (RobertaConfig, BiModel, AutoTokenizer)
 }
 
