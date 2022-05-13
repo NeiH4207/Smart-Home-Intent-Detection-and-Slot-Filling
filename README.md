@@ -118,11 +118,18 @@ Example:
         --model_dir ./trained_models/filtering_model --data_dir BKAI \
         --intent_label_file intent_label.txt --slot_label_file slot_label.txt \
         --rule_file ./BKAI/rule.csv --train_type augment_train_val_plus \
-        --val_type augment_val test_type augment_val --seed 11 \
+        --val_type augment_val --test_type augment_val --seed 11 \
         --do_train --do_eval --num_train_epochs 50 --tuning_metric mean_intent_slot \
         --use_crf --gpu_id 0 --embedding_type soft --intent_loss_coef 0.7 \
         --learning_rate 0.00004 --dropout_rate 0.7 --attention_embedding_size 384 \
         --save_steps 69 --logging_steps 69 --use_rule_based --train_batch_size 32
+    ```
+   3. Augmentation - 2
+    ```
+        python augment_data.py --dataset-path ./BKAI/word-level --trainset train/seq.in \
+        --train_intent_label train/label --train_slot_label train/seq.out --valset dev/seq.in \
+        --val_intent_label dev/label --val_slot_label dev/seq.out \
+        --intent-label-file intent_label.txt --slot-label-file slot_label.txt
     ```
    4. Filtering
     ```
