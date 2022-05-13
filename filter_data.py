@@ -221,7 +221,7 @@ def filter(pred_config):
         slot_filtered_reports[slot_label] = 0
         before_slot_filtered_reports[slot_label] = 0
         
-    max_collect_num = 1200
+    max_collect_num = pred_config.max_collect_num
         
     with open(filter_intent_input_file, 'w') as f_intent_input, \
             open(filter_intent_label_lst_file, 'w') as f_intent_label_lst, \
@@ -230,14 +230,10 @@ def filter(pred_config):
             temp_intent_entropy_threshold = intent_entropy_threshold
             temp_slot_entropy_threshold = slot_entropy_threshold
             temp_max_collect_num = max_collect_num
-            if labels[i] in ['smart.home.decrease.percentage']:
+            if labels[i] in ['smart.home.decrease.level', 'smart.home.increase.level', 'smart.home.set.level']:
                 temp_intent_entropy_threshold *= 2
                 temp_slot_entropy_threshold *= 2
-                temp_max_collect_num *= 1.2
-            if labels[i] in ['smart.home.increase.percentage', 'smart.home.set.level']:
-                temp_intent_entropy_threshold *= 1.5
-                temp_slot_entropy_threshold *= 1.5
-                temp_max_collect_num *= 1.1
+                temp_max_collect_num *= 1.3
             if intent_filtered_reports[labels[i]] > temp_max_collect_num:
                 continue
             if labels[i] == 'greeting' or intent_entropies[i] < temp_intent_entropy_threshold and \
@@ -257,15 +253,19 @@ def filter(pred_config):
                 before_slot_filtered_reports[slot] += 1
     
     # save reports
-    with open(pred_config.output_dir + "/reports.json", 'w') as f:
-        json.dump(before_intent_filtered_reports, f, indent=4)
-    with open(pred_config.output_dir + "/filtered_reports.json", 'w') as f:
-        json.dump(intent_filtered_reports, f, indent=4)
+    # with open(pred_config.output_dir + "/reports.json", 'w') as f:
+    #     json.dump(before_intent_filtered_reports, f, indent=4)
+    # with open(pred_config.output_dir + "/filtered_reports.json", 'w') as f:
+    #     json.dump(intent_filtered_reports, f, indent=4)
         
-    with open(pred_config.output_dir + "/slot_reports.json", 'w') as f:
-        json.dump(before_slot_filtered_reports, f, indent=4)
-    with open(pred_config.output_dir + "/filtered_slot_reports.json", 'w') as f:
-        json.dump(slot_filtered_reports, f, indent=4)
+    # with open(pred_config.output_dir + "/slot_reports.json", 'w') as f:
+    #     json.dump(before_slot_filtered_reports, f, indent=4)
+    # with open(pred_config.output_dir + "/filtered_slot_reports.json", 'w') as f:
+    #     json.dump(slot_filtered_reports, f, indent=4)
+    print(before_intent_filtered_reports)
+    print(intent_filtered_reports)
+    print(before_slot_filtered_reports)
+    print(slot_filtered_reports)
     logger.info("filterion Done!")
 
 
@@ -280,7 +280,7 @@ if __name__ == "__main__":
     parser.add_argument("--intent_entropy_threshold", default=1.0, type=float, help="Entropy intent threshold")
     parser.add_argument("--slot_entropy_threshold", default=1.0, type=float, help="Entropy slot threshold")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
-
+    parser.add_argument("--max_collect_num", default=1200, type=int, help="Max collect num")
     parser.add_argument("--output_dir", default="output/", type=str, help="Output file for filterion")
     pred_config = parser.parse_args()
     filter(pred_config)

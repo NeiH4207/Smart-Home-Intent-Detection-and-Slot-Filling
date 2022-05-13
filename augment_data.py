@@ -11,6 +11,7 @@ import os
 
 from matplotlib import pyplot as plt
 from src.data_loader import DataLoader
+from utils import set_seed
 log = logging.getLogger(__name__)
 
 def parse_args():
@@ -35,6 +36,8 @@ def parse_args():
                         help='name of the slot label file')
     parser.add_argument('-k', '--K', type=int, default=7,
                         help='number of generated examples')
+    parser.add_argument('--seed', type=int, default=1,
+                        help='number of generated examples')
     
     args = parser.parse_args()
     args.intent_label_file = os.path.join(args.dataset_path, args.intent_label_file)
@@ -44,6 +47,7 @@ def parse_args():
 
 def main():
     args = parse_args()
+    set_seed(args)
     data_loader = DataLoader()
     
     intent_label_lst = []
