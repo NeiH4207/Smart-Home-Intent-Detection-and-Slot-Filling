@@ -70,7 +70,8 @@ def convert_input_file_to_tensor_dataset(
     all_attention_mask = []
     all_token_type_ids = []
     all_slot_label_mask = []
-
+    all_real_len = []
+    
     for words in lines:
         tokens = []
         slot_label_mask = []
@@ -102,7 +103,7 @@ def convert_input_file_to_tensor_dataset(
 
         # The mask has 1 for real tokens and 0 for padding tokens. Only real tokens are attended to.
         attention_mask = [1 if mask_padding_with_zero else 0] * len(input_ids)
-
+        
         # Zero-pad up to the sequence length.
         padding_length = args.max_seq_len - len(input_ids)
         input_ids = input_ids + ([pad_token_id] * padding_length)
@@ -114,14 +115,17 @@ def convert_input_file_to_tensor_dataset(
         all_attention_mask.append(attention_mask)
         all_token_type_ids.append(token_type_ids)
         all_slot_label_mask.append(slot_label_mask)
+        all_real_len.append(len(tokens) + 2)
 
     # Change to Tensor
     all_input_ids = torch.tensor(all_input_ids, dtype=torch.long)
     all_attention_mask = torch.tensor(all_attention_mask, dtype=torch.long)
     all_token_type_ids = torch.tensor(all_token_type_ids, dtype=torch.long)
     all_slot_label_mask = torch.tensor(all_slot_label_mask, dtype=torch.long)
-
-    dataset = TensorDataset(all_input_ids, all_attention_mask, all_token_type_ids, all_slot_label_mask)
+    all_real_len = torch.tensor(all_real_len, dtype=torch.long)
+    dataset = TensorDataset(all_input_ids, all_attention_mask,
+                            all_token_type_ids, all_slot_label_mask,
+                            all_real_len)
 
     return dataset
 
@@ -158,6 +162,7 @@ def predict(pred_config):
                 "attention_mask": batch[1],
                 "intent_label_ids": None,
                 "slot_labels_ids": None,
+                "real_lens": batch[-1],
             }
             if args.model_type != "distilbert":
                 inputs["token_type_ids"] = batch[2]

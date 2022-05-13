@@ -49,7 +49,7 @@ class DataLoader(object):
             'suffix': [
                 (['đê'], ['O']),
                 (['chỉ', '1', 'chút', 'thôi','nhé'], ['O', 'O', 'O', 'O', 'O']),
-                (['để', 'tôi', 'tắm'], ['O', 'O', 'O']),
+                (['để', 'chủ', 'nhân', 'tắm'], ['O', 'O', 'O', 'O']),
                 ],
             ('smart.home.check.status', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall'])
@@ -140,10 +140,26 @@ class DataLoader(object):
                 if _n_suffix < 6 and _n_suffix > 0 and (words[-_n_suffix:], slots[-_n_suffix-1:-1]) not in self.dictionary['suffix']:
                     self.dictionary['suffix'].append((words[-_n_suffix:], slots[-_n_suffix-1:-1]))
     
+    def update_prob(self, probs, idx, discount_rate):
+        diff = (probs[idx] - probs[idx] * discount_rate) / (len(probs) - 1)
+        for i in range(len(probs)):
+            if i == idx:
+                probs[idx] *= discount_rate
+            else:
+                probs[i] += diff
+        return probs
+    
     def augment(self, dataset, drop_rate=0.2, change_rate=0.2, K=4, merge=True):
         '''
         Augment data
         '''
+        
+        # shuffle data
+        # ids = list(range(len(dataset['data'])))
+        # np.random.shuffle(ids)
+        # dataset['data'] = [dataset['data'][i] for i in ids]
+        # dataset['intent_label'] = [dataset['intent_label'][i] for i in ids]
+        # dataset['slot_label'] = [dataset['slot_label'][i] for i in ids]
         
         new_data = {
             'data': [],
@@ -180,14 +196,20 @@ class DataLoader(object):
                 p_word_list.append(p_word)
                 p_slot_list.append(p_slot)
             
+            dict_prob = {}
+            for key in self.dictionary:
+                dict_prob[key] = [1 / len(self.dictionary[key]) for _ in range(len(self.dictionary[key]))]
+            
             for _ in range(K):
                 p_words = []
                 p_slots = []
                 drop_p = uniform(0, 1)
                 for p_word, p_slot in zip(p_word_list, p_slot_list):
+                    key = (intent, p_slot[0])
                     if p_slot[0] != 'O' and uniform(0, 1) < change_rate:
-                        rd_id = np.random.choice(len(self.dictionary[(intent, p_slot[0])]))
-                        p_word, p_slot = self.dictionary[(intent, p_slot[0])][rd_id]
+                        rd_id = np.random.choice(len(self.dictionary[key]), p=dict_prob[key])
+                        p_word, p_slot = self.dictionary[key][rd_id]
+                        self.update_prob(dict_prob[key], rd_id, 0.95)
                     if drop_p < drop_rate and p_word[0] not in self.key_words:
                         if p_slot[0] == 'O':
                             continue
@@ -197,17 +219,21 @@ class DataLoader(object):
                 if len(p_words) > 1:
                     if ((p_words[0].split(' ')[0] in self.key_words) or p_slots[0] != 'O') and uniform(0, 1) < 0.5 and len(self.dictionary['prefix']) > 0:
                         # add random prefix
-                        rd_id = np.random.choice(len(self.dictionary['prefix']))
+                        rd_id = np.random.choice(len(self.dictionary['prefix']),
+                                                    p=dict_prob['prefix'])
                         p_word, p_slot = self.dictionary['prefix'][rd_id]
                         p_words.insert(0, ' '.join(p_word))
                         p_slots.insert(0, ' '.join(p_slot))
+                        self.update_prob(dict_prob['prefix'], rd_id, 0.95)
                     
                     if p_slots[-1] != 'O' and uniform(0, 1) < 0.5 and len(self.dictionary['suffix']) > 0:
                         # add random suffix
-                        rd_id = np.random.choice(len(self.dictionary['suffix']))
+                        rd_id = np.random.choice(len(self.dictionary['suffix']),
+                                                    p=dict_prob['suffix'])
                         p_word, p_slot = self.dictionary['suffix'][rd_id]
                         p_words.append(' '.join(p_word))
                         p_slots.append(' '.join(p_slot))
+                        self.update_prob(dict_prob['suffix'], rd_id, 0.95)
                     
                     new_segmented_sentence = ' '.join(p_words)
                     new_segmented_slots = ' '.join(p_slots)
@@ -225,12 +251,6 @@ class DataLoader(object):
                 new_data['intent_label'].append(intent)
                 new_data['slot_label'].append(slots)
                 
-        # shuffle data
-        # ids = list(range(len(new_data['data'])))
-        # np.random.shuffle(ids)
-        # new_data['data'] = [new_data['data'][i] for i in ids]
-        # new_data['intent_label'] = [new_data['intent_label'][i] for i in ids]
-        # new_data['slot_label'] = [new_data['slot_label'][i] for i in ids]
         
         return new_data
 

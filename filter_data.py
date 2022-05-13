@@ -173,6 +173,7 @@ def filter(pred_config):
                 "attention_mask": batch[1],
                 "intent_label_ids": None,
                 "slot_labels_ids": None,
+                "real_lens": batch[-1],
             }
             if args.model_type != "distilbert":
                 inputs["token_type_ids"] = batch[2]
@@ -220,7 +221,7 @@ def filter(pred_config):
         slot_filtered_reports[slot_label] = 0
         before_slot_filtered_reports[slot_label] = 0
         
-    max_collect_num = 1800
+    max_collect_num = 4000
         
     with open(filter_intent_input_file, 'w') as f_intent_input, \
             open(filter_intent_label_lst_file, 'w') as f_intent_label_lst, \
@@ -277,8 +278,8 @@ if __name__ == "__main__":
     parser.add_argument("--model_dir", default="./models/filtering_model", type=str, help="Path to save, load model")
 
     parser.add_argument("--batch_size", default=128, type=int, help="Batch size for filterion")
-    parser.add_argument("--intent_entropy_threshold", default=0.25, type=float, help="Entropy intent threshold")
-    parser.add_argument("--slot_entropy_threshold", default=0.45, type=float, help="Entropy slot threshold")
+    parser.add_argument("--intent_entropy_threshold", default=1.0, type=float, help="Entropy intent threshold")
+    parser.add_argument("--slot_entropy_threshold", default=1.0, type=float, help="Entropy slot threshold")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
 
     parser.add_argument("--output_dir", default="output/", type=str, help="Output file for filterion")

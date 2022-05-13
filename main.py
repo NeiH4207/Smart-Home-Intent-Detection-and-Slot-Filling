@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--model_type",
-        default="bimodel",
+        default="phobert",
         type=str,
         help="Model type selected in the list: " + ", ".join(MODEL_CLASSES.keys()),
     )

@@ -73,9 +73,11 @@ def main():
     data_loader.make_dict(data_loader.dataset['val'])
         
     agumented_train_dataset = data_loader.augment(data_loader.dataset['train'],
-                                                  merge=True, drop_rate=0.5, change_rate=1.0, K=10)
+                                                  merge=True, drop_rate=0.5,
+                                                  change_rate=1.0, K=5)
     agumented_val_dataset = data_loader.augment(data_loader.dataset['val'], 
-                                                merge=True, drop_rate=0.5, change_rate=1.0, K=10)
+                                                merge=True, drop_rate=0.5, 
+                                                change_rate=1.0, K=5)
     agumented_train_val_plus_dataset = deepcopy(agumented_train_dataset)
     
     for sentence, intent, slots in zip(agumented_val_dataset['data'], 
@@ -91,7 +93,7 @@ def main():
                      dataset=agumented_train_val_plus_dataset)
     
     agumented_val_dataset = data_loader.augment(data_loader.dataset['val'], 
-                                                merge=False, drop_rate=0.5, change_rate=1.0, K=10)
+                                                merge=False, drop_rate=0.5, change_rate=1.0, K=5)
     agumented_train_val_dataset = deepcopy(agumented_train_dataset)
     
     for sentence, intent, slots in zip(agumented_val_dataset['data'],
