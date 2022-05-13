@@ -6,7 +6,10 @@ from __future__ import division
 import argparse
 from copy import deepcopy
 import logging
+import math
 import os
+
+from matplotlib import pyplot as plt
 from src.data_loader import DataLoader
 log = logging.getLogger(__name__)
 
@@ -43,6 +46,17 @@ def main():
     args = parse_args()
     data_loader = DataLoader()
     
+    intent_label_lst = []
+    slot_label_lst = []
+    with open(args.intent_label_file, 'r') as f:
+        for line in f:
+            intent_label_lst.append(line.strip())
+    with open(args.slot_label_file, 'r') as f:
+        for line in f:
+            slot_label_lst.append(line.strip())
+    intent_label_lst = sorted(intent_label_lst)
+    slot_label_lst = sorted(slot_label_lst)
+    
     ''' Load data '''
     data_loader.make(
         dataset_path=args.dataset_path,
@@ -59,22 +73,24 @@ def main():
     data_loader.make_dict(data_loader.dataset['val'])
         
     agumented_train_dataset = data_loader.augment(data_loader.dataset['train'],
-                                                  merge=True, drop_rate=0.5, change_rate=1.0, K=10)
+                                                  merge=True, drop_rate=0.5,
+                                                  change_rate=1.0, K=5)
     agumented_val_dataset = data_loader.augment(data_loader.dataset['val'], 
-                                                merge=True, drop_rate=0.5, change_rate=1.0, K=10)
-    agumented_train_val_dataset = deepcopy(agumented_train_dataset)
+                                                merge=True, drop_rate=0.5, 
+                                                change_rate=1.0, K=5)
+    agumented_train_val_plus_dataset = deepcopy(agumented_train_dataset)
     
     for sentence, intent, slots in zip(agumented_val_dataset['data'], 
                                        agumented_val_dataset['intent_label'], 
                                        agumented_val_dataset['slot_label']):
-        agumented_train_val_dataset['data'].append(sentence)
-        agumented_train_val_dataset['intent_label'].append(intent)
-        agumented_train_val_dataset['slot_label'].append(slots)
+        agumented_train_val_plus_dataset['data'].append(sentence)
+        agumented_train_val_plus_dataset['intent_label'].append(intent)
+        agumented_train_val_plus_dataset['slot_label'].append(slots)
     
     data_loader.dump(path='BKAI/word-level/augment_train',
                      dataset=agumented_train_dataset)
     data_loader.dump(path='BKAI/word-level/augment_train_val_plus',
-                     dataset=agumented_train_val_dataset)
+                     dataset=agumented_train_val_plus_dataset)
     
     agumented_val_dataset = data_loader.augment(data_loader.dataset['val'], 
                                                 merge=False, drop_rate=0.5, change_rate=1.0, K=5)
@@ -91,7 +107,39 @@ def main():
                         dataset=agumented_val_dataset)
     data_loader.dump(path='BKAI/word-level/augment_train_val',
                         dataset=agumented_train_val_dataset)
-                    
+                   
+                   
+                   
+    # statistic the number of intent and slot for each label
+    intent_label_dict = {}
+    slot_label_dict = {}
+    for intent_label in intent_label_lst:
+        intent_label_dict[intent_label] = 0
+    for slot_label in slot_label_lst:
+        if slot_label != 'O' and slot_label != 'PAD':
+            slot_label_dict[slot_label] = 0
+    
+    for intent in agumented_train_dataset['intent_label']:
+        intent_label_dict[intent] += 1
+                
+    for slots in agumented_train_dataset['slot_label']:
+        slot_list = slots.split(' ')
+        for slot in slot_list:
+            if slot != 'O' and slot != 'PAD':
+                slot_label_dict[slot] += 1
+    
+    # visualize the number of intent and slot for each label with two columns
+    plt.figure(figsize=(10, 10))
+    plt.subplot(1, 2, 1)
+    plt.bar(intent_label_lst, [math.log(intent_label_dict[label] + 1) for label in intent_label_lst], align='center')
+    plt.xticks(intent_label_lst, intent_label_lst, rotation=90)
+    plt.title('Intent')
+    plt.subplot(1, 2, 2)
+    plt.bar(slot_label_lst[:-2], [math.log(slot_label_dict[label] + 1) for label in slot_label_lst[:-2]], align='center')
+    plt.xticks(slot_label_lst[:-2], slot_label_lst[:-2], rotation=90)
+    plt.title('Slot')
+    plt.savefig('BKAI/word-level/augment_train_val_plus/statistic.png')
+    
     
 if __name__ == '__main__':
     main()

@@ -1,8 +1,8 @@
 import argparse
 
 from src.data_loader import load_and_cache_examples
-from trainer import Trainer
-from utils import MODEL_CLASSES, MODEL_PATH_MAP, init_logger, load_tokenizer, set_seed
+from src.trainer import Trainer
+from src.utils import MODEL_CLASSES, MODEL_PATH_MAP, init_logger, load_tokenizer, set_seed
 
 
 def main(args):
@@ -45,10 +45,10 @@ if __name__ == "__main__":
     )
     parser.add_argument("--tuning_metric", default="loss", type=str, help="Metrics to tune when training")
     parser.add_argument("--seed", type=int, default=1, help="random seed for initialization")
-    parser.add_argument("--train_batch_size", default=32, type=int, help="Batch size for training.")
-    parser.add_argument("--eval_batch_size", default=64, type=int, help="Batch size for evaluation.")
+    parser.add_argument("--train_batch_size", default=64, type=int, help="Batch size for training.")
+    # parser.add_argument("--eval_batch_size", default=64, type=int, help="Batch size for evaluation.")
     parser.add_argument(
-        "--max_seq_len", default=35, type=int, help="The maximum total input sequence length after tokenization."
+        "--max_seq_len", default=40, type=int, help="The maximum total input sequence length after tokenization."
     )
     parser.add_argument("--learning_rate", default=5e-5, type=float, help="The initial learning rate for Adam.")
     parser.add_argument(
@@ -147,6 +147,6 @@ if __name__ == "__main__":
     parser.add_argument("--use_attention_mask", action="store_true", help="Whether to use attention mask")
 
     args = parser.parse_args()
-
+    args.eval_batch_size = args.train_batch_size
     args.model_name_or_path = MODEL_PATH_MAP[args.model_type]
     main(args)

@@ -7,7 +7,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
 from tqdm import tqdm
-from utils import MODEL_CLASSES, get_intent_labels, get_slot_labels, init_logger, load_tokenizer
+from src.utils import MODEL_CLASSES, get_intent_labels, get_slot_labels, init_logger, load_tokenizer
 
 
 logger = logging.getLogger(__name__)
@@ -127,7 +127,7 @@ def convert_input_file_to_tensor_dataset(
     return dataset
 
 
-def predict(pred_config):
+def make_rule(pred_config):
     # load model and args
     args = get_args(pred_config)
     logger.info(args)
@@ -144,6 +144,10 @@ def predict(pred_config):
                 print(slot_label_lst[i], slot_label_lst[j])
             elif slot_label_lst[i][0] == 'B' and slot_label_lst[j][0] == 'B' and \
                 slot_label_lst[i][2:] == slot_label_lst[j][2:]:
+                rule_matrix[i, j] = 0
+                print(slot_label_lst[i], slot_label_lst[j])
+            elif slot_label_lst[i] == 'B-allall' and slot_label_lst[j] not in \
+                ['B-devicedevice', 'I-allall', 'O']:
                 rule_matrix[i, j] = 0
                 print(slot_label_lst[i], slot_label_lst[j])
             elif slot_label_lst[i][0] == 'O' and slot_label_lst[j][0] == 'I':
@@ -166,4 +170,4 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_dir", default="./trained_models", type=str, help="Path to save, load model")
     pred_config = parser.parse_args()
-    predict(pred_config)
+    make_rule(pred_config)

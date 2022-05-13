@@ -7,7 +7,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
 from tqdm import tqdm
-from utils import MODEL_CLASSES, get_intent_labels, get_slot_labels, init_logger, load_tokenizer
+from src.utils import MODEL_CLASSES, get_intent_labels, get_slot_labels, init_logger, load_tokenizer, set_seed
 from scipy.stats import entropy
 
 import matplotlib.pyplot as plt
@@ -30,7 +30,7 @@ def load_model(pred_config, args, device):
 
     try:
         model = MODEL_CLASSES[args.model_type][1].from_pretrained(
-            args.model_dir, args=args, intent_label_lst=get_intent_labels(args), slot_label_lst=get_slot_labels(args)
+            pred_config.model_dir, args=args, intent_label_lst=get_intent_labels(args), slot_label_lst=get_slot_labels(args)
         )
         model.to(device)
         model.eval()
@@ -132,6 +132,7 @@ def convert_input_file_to_tensor_dataset(
 def filter(pred_config):
     # load model and args
     args = get_args(pred_config)
+    set_seed(args)
     device = get_device(pred_config)
     model = load_model(pred_config, args, device)
     logger.info(args)
@@ -172,6 +173,7 @@ def filter(pred_config):
                 "attention_mask": batch[1],
                 "intent_label_ids": None,
                 "slot_labels_ids": None,
+                "real_lens": batch[-1],
             }
             if args.model_type != "distilbert":
                 inputs["token_type_ids"] = batch[2]
@@ -205,36 +207,65 @@ def filter(pred_config):
     filter_intent_label_lst_file = filter_path + '/filtered_label'
     filter_slot_input_file = filter_path + '/filtered_seq.out'
     
-    before_filtered_reports = {}
+    before_intent_filtered_reports = {}
+    before_slot_filtered_reports = {}
     
-    filtered_reports = {}
+    intent_filtered_reports = {}
+    slot_filtered_reports = {}
     
     for intent_label in intent_label_lst:
-        filtered_reports[intent_label] = 0
-        before_filtered_reports[intent_label] = 0
+        intent_filtered_reports[intent_label] = 0
+        before_intent_filtered_reports[intent_label] = 0
+    
+    for slot_label in slot_label_lst:
+        slot_filtered_reports[slot_label] = 0
+        before_slot_filtered_reports[slot_label] = 0
         
-    max_collect_num = 1499
+    max_collect_num = 4000
         
     with open(filter_intent_input_file, 'w') as f_intent_input, \
             open(filter_intent_label_lst_file, 'w') as f_intent_label_lst, \
             open(filter_slot_input_file, 'w') as f_slot_input:
         for i in range(len(intent_entropies)):
-            if filtered_reports[labels[i]] > max_collect_num:
+            temp_intent_entropy_threshold = intent_entropy_threshold
+            temp_slot_entropy_threshold = slot_entropy_threshold
+            temp_max_collect_num = max_collect_num
+            if labels[i] in ['smart.home.decrease.level']:
+                temp_intent_entropy_threshold *= 2
+                temp_slot_entropy_threshold *= 2
+                temp_max_collect_num *= 1.2
+            if labels[i] in ['smart.home.increase.level', 'smart.home.set.level']:
+                temp_intent_entropy_threshold *= 1.5
+                temp_slot_entropy_threshold *= 1.5
+                temp_max_collect_num *= 1.1
+            if intent_filtered_reports[labels[i]] > temp_max_collect_num:
                 continue
-            if labels[i] == 'greeting' or intent_entropies[i] < intent_entropy_threshold and \
-                    slot_entropies[i] < slot_entropy_threshold:
+            if labels[i] == 'greeting' or intent_entropies[i] < temp_intent_entropy_threshold and \
+                    (slot_entropies[i] < temp_slot_entropy_threshold or\
+                        'statusstatus' in slots[i] or\
+                        'I-allall' in slots[i] 
+                        ):
                 f_intent_input.write(' '.join(lines[i]) + '\n')
                 f_intent_label_lst.write(labels[i] + '\n')
                 f_slot_input.write(slots[i] + '\n')
-                filtered_reports[labels[i]] += 1    
-            before_filtered_reports[labels[i]] += 1
+                intent_filtered_reports[labels[i]] += 1    
+                for slot in slots[i].split(' '):
+                    slot_filtered_reports[slot] += 1
+                    
+            before_intent_filtered_reports[labels[i]] += 1 
+            for slot in slots[i].split(' '):
+                before_slot_filtered_reports[slot] += 1
     
     # save reports
     with open(pred_config.output_dir + "/reports.json", 'w') as f:
-        json.dump(before_filtered_reports, f, indent=4)
+        json.dump(before_intent_filtered_reports, f, indent=4)
     with open(pred_config.output_dir + "/filtered_reports.json", 'w') as f:
-        json.dump(filtered_reports, f, indent=4)
-    print(json.dumps(filtered_reports, indent=4))
+        json.dump(intent_filtered_reports, f, indent=4)
+        
+    with open(pred_config.output_dir + "/slot_reports.json", 'w') as f:
+        json.dump(before_slot_filtered_reports, f, indent=4)
+    with open(pred_config.output_dir + "/filtered_slot_reports.json", 'w') as f:
+        json.dump(slot_filtered_reports, f, indent=4)
     logger.info("filterion Done!")
 
 
@@ -247,8 +278,8 @@ if __name__ == "__main__":
     parser.add_argument("--model_dir", default="./models/filtering_model", type=str, help="Path to save, load model")
 
     parser.add_argument("--batch_size", default=128, type=int, help="Batch size for filterion")
-    parser.add_argument("--intent_entropy_threshold", default=0.25, type=float, help="Entropy intent threshold")
-    parser.add_argument("--slot_entropy_threshold", default=0.25, type=float, help="Entropy slot threshold")
+    parser.add_argument("--intent_entropy_threshold", default=1.0, type=float, help="Entropy intent threshold")
+    parser.add_argument("--slot_entropy_threshold", default=1.0, type=float, help="Entropy slot threshold")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
 
     parser.add_argument("--output_dir", default="output/", type=str, help="Output file for filterion")

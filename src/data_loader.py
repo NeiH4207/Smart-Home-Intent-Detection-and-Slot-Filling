@@ -7,7 +7,7 @@ import numpy as np
 
 import torch
 from torch.utils.data import TensorDataset
-from utils import get_intent_labels, get_slot_labels
+from src.utils import get_intent_labels, get_slot_labels
 
 
 logger = logging.getLogger(__name__)
@@ -41,10 +41,53 @@ class DataLoader(object):
         
         self.intent_label_encoder = None
         self.slot_label_encoder = None
-        self.dictionary = {'prefix': [], 'suffix': []}
+
+        self.dictionary = {
+            'prefix': [
+                (['đang', 'học', 'bài', 'vui', 'lòng'], ['O', 'O', 'O', 'O', 'O']),  
+                ], 
+            'suffix': [
+                (['đê'], ['O']),
+                (['chỉ', '1', 'chút', 'thôi','nhé'], ['O', 'O', 'O', 'O', 'O']),
+                (['để', 'chủ', 'nhân', 'tắm'], ['O', 'O', 'O', 'O']),
+                ],
+            ('smart.home.check.status', 'B-allall'): [
+                (['toàn', 'bộ'], ['B-allall', 'I-allall'])
+                ],
+            ('smart.home.device.onoff', 'B-allall'): [
+                
+            ],
+            
+            ('smart.home.check.status', 'B-commandcommand'): [
+                (['báo', 'cáo'], ['B-commandcommand', 'I-commandcommand'])
+            ],
+            
+            ('smart.home.set.color', 'B-allall'): [
+                (['toàn', 'bộ'], ['B-allall', 'I-allall'])
+            ],
+            ('smart.home.set.level', 'B-allall'): [
+                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
+                (['ánh', 'sáng'], ['B-devicedevice', 'I-devicedevice']),
+            ], 
+            ('smart.home.set.percentage', 'B-allall'): [
+                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
+            ],
+            ('smart.home.increase.level', 'B-allall'): [
+                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
+            ],
+            ('smart.home.increase.percentage', 'B-allall'): [
+                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
+            ],
+            ('smart.home.decrease.level', 'B-allall'): [
+                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
+            ],
+            ('smart.home.decrease.percentage', 'B-allall'): [
+                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
+            ]
+        }
         
-        self.key_words = ['tăng', 'giảm', 'lên', 'xuống', 'mức', 'sáng', 'màu', 'thêm',
-                    'cấp', 'bật', 'hạ', 'thay', 'đổi', 'số']
+        self.key_words = ['tăng', 'giảm', 'lên', 'xuống', 'mức', 'hơi', 'sáng', 'màu', 'thêm',
+                    'cấp', 'bật', 'hạ', 'thay', 'đổi', 'số', 'chỉnh', 'điều']
         
     def make_dict(self, dataset):
         for sentence, intent, slots in zip(dataset['data'], dataset['intent_label'], dataset['slot_label']):
@@ -85,7 +128,8 @@ class DataLoader(object):
                 if (intent, p_slots[0]) not in self.dictionary:
                     self.dictionary[(intent, p_slots[0])] = [(p_words, p_slots)]
                 else:
-                    self.dictionary[(intent, p_slots[0])].append((p_words, p_slots))
+                    if (p_words, p_slots) not in self.dictionary[(intent, p_slots[0])]:
+                        self.dictionary[(intent, p_slots[0])].append((p_words, p_slots))
             if intent != 'greeting':
                 _n_suffix = 0
                 for i, slot in enumerate(slots[::-1][1:]):
@@ -96,10 +140,26 @@ class DataLoader(object):
                 if _n_suffix < 6 and _n_suffix > 0 and (words[-_n_suffix:], slots[-_n_suffix-1:-1]) not in self.dictionary['suffix']:
                     self.dictionary['suffix'].append((words[-_n_suffix:], slots[-_n_suffix-1:-1]))
     
+    def update_prob(self, probs, idx, discount_rate):
+        diff = (probs[idx] - probs[idx] * discount_rate) / (len(probs) - 1)
+        for i in range(len(probs)):
+            if i == idx:
+                probs[idx] *= discount_rate
+            else:
+                probs[i] += diff
+        return probs
+    
     def augment(self, dataset, drop_rate=0.2, change_rate=0.2, K=4, merge=True):
         '''
         Augment data
         '''
+        
+        # shuffle data
+        # ids = list(range(len(dataset['data'])))
+        # np.random.shuffle(ids)
+        # dataset['data'] = [dataset['data'][i] for i in ids]
+        # dataset['intent_label'] = [dataset['intent_label'][i] for i in ids]
+        # dataset['slot_label'] = [dataset['slot_label'][i] for i in ids]
         
         new_data = {
             'data': [],
@@ -136,14 +196,20 @@ class DataLoader(object):
                 p_word_list.append(p_word)
                 p_slot_list.append(p_slot)
             
+            dict_prob = {}
+            for key in self.dictionary:
+                dict_prob[key] = [1 / len(self.dictionary[key]) for _ in range(len(self.dictionary[key]))]
+            
             for _ in range(K):
                 p_words = []
                 p_slots = []
                 drop_p = uniform(0, 1)
                 for p_word, p_slot in zip(p_word_list, p_slot_list):
+                    key = (intent, p_slot[0])
                     if p_slot[0] != 'O' and uniform(0, 1) < change_rate:
-                        rd_id = np.random.choice(len(self.dictionary[(intent, p_slot[0])]))
-                        p_word, p_slot = self.dictionary[(intent, p_slot[0])][rd_id]
+                        rd_id = np.random.choice(len(self.dictionary[key]), p=dict_prob[key])
+                        p_word, p_slot = self.dictionary[key][rd_id]
+                        self.update_prob(dict_prob[key], rd_id, 0.95)
                     if drop_p < drop_rate and p_word[0] not in self.key_words:
                         if p_slot[0] == 'O':
                             continue
@@ -153,17 +219,21 @@ class DataLoader(object):
                 if len(p_words) > 1:
                     if ((p_words[0].split(' ')[0] in self.key_words) or p_slots[0] != 'O') and uniform(0, 1) < 0.5 and len(self.dictionary['prefix']) > 0:
                         # add random prefix
-                        rd_id = np.random.choice(len(self.dictionary['prefix']))
+                        rd_id = np.random.choice(len(self.dictionary['prefix']),
+                                                    p=dict_prob['prefix'])
                         p_word, p_slot = self.dictionary['prefix'][rd_id]
                         p_words.insert(0, ' '.join(p_word))
                         p_slots.insert(0, ' '.join(p_slot))
+                        self.update_prob(dict_prob['prefix'], rd_id, 0.95)
                     
                     if p_slots[-1] != 'O' and uniform(0, 1) < 0.5 and len(self.dictionary['suffix']) > 0:
                         # add random suffix
-                        rd_id = np.random.choice(len(self.dictionary['suffix']))
+                        rd_id = np.random.choice(len(self.dictionary['suffix']),
+                                                    p=dict_prob['suffix'])
                         p_word, p_slot = self.dictionary['suffix'][rd_id]
                         p_words.append(' '.join(p_word))
                         p_slots.append(' '.join(p_slot))
+                        self.update_prob(dict_prob['suffix'], rd_id, 0.95)
                     
                     new_segmented_sentence = ' '.join(p_words)
                     new_segmented_slots = ' '.join(p_slots)
@@ -181,12 +251,6 @@ class DataLoader(object):
                 new_data['intent_label'].append(intent)
                 new_data['slot_label'].append(slots)
                 
-        # shuffle data
-        ids = list(range(len(new_data['data'])))
-        np.random.shuffle(ids)
-        new_data['data'] = [new_data['data'][i] for i in ids]
-        new_data['intent_label'] = [new_data['intent_label'][i] for i in ids]
-        new_data['slot_label'] = [new_data['slot_label'][i] for i in ids]
         
         return new_data
 
@@ -251,12 +315,13 @@ class InputExample(object):
         slot_labels: (Optional) list. The slot labels of the example.
     """
 
-    def __init__(self, guid, words, intent_label=None, slot_labels=None):
+    def __init__(self, guid, words, intent_label=None, slot_labels=None, real_len=None):
         self.guid = guid
         self.words = words
         self.intent_label = intent_label
         self.slot_labels = slot_labels
-
+        self.real_len = real_len
+        
     def __repr__(self):
         return str(self.to_json_string())
 
@@ -273,12 +338,13 @@ class InputExample(object):
 class InputFeatures(object):
     """A single set of features of data."""
 
-    def __init__(self, input_ids, attention_mask, token_type_ids, intent_label_id, slot_labels_ids):
+    def __init__(self, input_ids, attention_mask, token_type_ids, intent_label_id, slot_labels_ids, real_len):
         self.input_ids = input_ids
         self.attention_mask = attention_mask
         self.token_type_ids = token_type_ids
         self.intent_label_id = intent_label_id
         self.slot_labels_ids = slot_labels_ids
+        self.real_len = real_len
 
     def __repr__(self):
         return str(self.to_json_string())
@@ -335,9 +401,10 @@ class JointProcessor(object):
                 slot_labels.append(
                     self.slot_labels.index(s) if s in self.slot_labels else self.slot_labels.index("UNK")
                 )
-
+                
+            real_len = len(words)
             assert len(words) == len(slot_labels)
-            examples.append(InputExample(guid=guid, words=words, intent_label=intent_label, slot_labels=slot_labels))
+            examples.append(InputExample(guid=guid, words=words, intent_label=intent_label, slot_labels=slot_labels, real_len=real_len))
         return examples
 
     def get_examples(self, mode):
@@ -418,7 +485,8 @@ def convert_examples_to_features(
         attention_mask = attention_mask + ([0 if mask_padding_with_zero else 1] * padding_length)
         token_type_ids = token_type_ids + ([pad_token_segment_id] * padding_length)
         slot_labels_ids = slot_labels_ids + ([pad_token_label_id] * padding_length)
-
+        
+        real_len = example.real_len + 2
         assert len(input_ids) == max_seq_len, "Error with input length {} vs {}".format(len(input_ids), max_seq_len)
         assert len(attention_mask) == max_seq_len, "Error with attention mask length {} vs {}".format(
             len(attention_mask), max_seq_len
@@ -449,6 +517,7 @@ def convert_examples_to_features(
                 token_type_ids=token_type_ids,
                 intent_label_id=intent_label_id,
                 slot_labels_ids=slot_labels_ids,
+                real_len=real_len,
             )
         )
 
@@ -493,9 +562,10 @@ def load_and_cache_examples(args, tokenizer, mode):
     all_token_type_ids = torch.tensor([f.token_type_ids for f in features], dtype=torch.long)
     all_intent_label_ids = torch.tensor([f.intent_label_id for f in features], dtype=torch.long)
     all_slot_labels_ids = torch.tensor([f.slot_labels_ids for f in features], dtype=torch.long)
-
+    all_real_len = torch.tensor([f.real_len for f in features], dtype=torch.long)
+    
     dataset = TensorDataset(
-        all_input_ids, all_attention_mask, all_token_type_ids, all_intent_label_ids, all_slot_labels_ids
+        all_input_ids, all_attention_mask, all_token_type_ids, all_intent_label_ids, all_slot_labels_ids, all_real_len
     )
     return dataset
 

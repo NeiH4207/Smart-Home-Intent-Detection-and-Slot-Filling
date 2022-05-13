@@ -3,3 +3,7 @@ PhoATIS/
 output/
 trained_models/
 data/
+models/
+RDRsegmenter/
+*workspace*
+*.pyc
