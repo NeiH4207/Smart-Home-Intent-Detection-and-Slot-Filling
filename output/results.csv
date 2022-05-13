@@ -128,10 +128,10 @@ smart.home.check.status, O O O O B-devicedevice I-devicedevice I-devicedevice I-
 smart.home.check.status, O B-devicedevice I-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-roomroom I-roomroom O O O O O O O O O
 smart.home.check.status, O O O O O O O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-roomroom I-roomroom I-roomroom I-roomroom O
 smart.home.check.status, B-commandcommand I-commandcommand B-devicedevice O O O
-smart.home.set.level, O O O B-devicedevice O B-roomroom I-roomroom O O O O
+smart.home.check.status, O O O B-devicedevice O B-roomroom I-roomroom O O O O
 smart.home.check.status, O O O O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O O O O O O O
 smart.home.check.status, O O O O O O B-devicedevice I-devicedevice O B-roomroom I-roomroom
-smart.home.decrease.level, O O O B-devicedevice I-devicedevice O B-roomroom
+smart.home.decrease.percentage, O O O B-devicedevice I-devicedevice O B-roomroom
 smart.home.decrease.percentage, O O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-roomroom I-roomroom
 smart.home.decrease.percentage, O O B-commandcommand O B-devicedevice I-devicedevice O B-final-valuesyspercentage I-final-valuesyspercentage I-final-valuesyspercentage
 smart.home.decrease.percentage, B-commandcommand I-commandcommand O O B-devicedevice I-devicedevice I-devicedevice O B-change-valuesyspercentage I-change-valuesyspercentage I-change-valuesyspercentage
@@ -140,16 +140,16 @@ smart.home.decrease.percentage, O B-devicedevice I-devicedevice I-devicedevice I
 smart.home.decrease.percentage, B-commandcommand I-commandcommand O O B-devicedevice I-devicedevice I-devicedevice O B-final-valuesyspercentage I-final-valuesyspercentage I-final-valuesyspercentage
 smart.home.decrease.percentage, B-commandcommand B-allall I-allall B-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-change-valuesyspercentage I-change-valuesyspercentage I-change-valuesyspercentage
 smart.home.decrease.percentage, O O O B-devicedevice I-devicedevice I-devicedevice O B-roomroom I-roomroom
-smart.home.decrease.percentage, O O O O O O B-roomroom I-roomroom I-roomroom O O B-devicedevice O O O O O O O O O O O O B-change-valuesyspercentage I-change-valuesyspercentage I-change-valuesyspercentage B-devicedevice I-devicedevice I-devicedevice O
-smart.home.decrease.percentage, B-commandcommand O O B-devicedevice I-devicedevice O B-final-valuesyspercentage I-final-valuesyspercentage I-final-valuesyspercentage
+smart.home.decrease.percentage, O O O O O O B-roomroom I-roomroom I-roomroom O O B-devicedevice I-devicedevice O O O O O O O O O O O B-change-valuesyspercentage I-change-valuesyspercentage I-change-valuesyspercentage B-devicedevice I-devicedevice I-devicedevice O
+smart.home.decrease.percentage, B-commandcommand I-commandcommand O B-devicedevice I-devicedevice O B-final-valuesyspercentage I-final-valuesyspercentage I-final-valuesyspercentage
 smart.home.decrease.percentage, B-commandcommand B-devicedevice O B-final-valuesyspercentage I-final-valuesyspercentage I-final-valuesyspercentage
 smart.home.decrease.percentage, O O B-commandcommand I-commandcommand O B-devicedevice I-devicedevice I-devicedevice O B-final-valuesyspercentage I-final-valuesyspercentage I-final-valuesyspercentage
 smart.home.decrease.percentage, B-commandcommand I-commandcommand B-devicedevice I-devicedevice O B-final-valuesyspercentage I-final-valuesyspercentage I-final-valuesyspercentage
-smart.home.decrease.percentage, O O O O O O B-roomroom I-roomroom O O B-devicedevice O O O O O O O O O O O O B-change-valuesyspercentage I-change-valuesyspercentage I-change-valuesyspercentage B-devicedevice I-devicedevice I-devicedevice I-devicedevice O
+smart.home.decrease.percentage, O O O O O O B-roomroom I-roomroom O O B-devicedevice I-devicedevice O O O O O O O O O O O B-change-valuesyspercentage I-change-valuesyspercentage I-change-valuesyspercentage B-devicedevice I-devicedevice I-devicedevice I-devicedevice O
 smart.home.decrease.percentage, B-commandcommand I-commandcommand B-allall B-devicedevice I-devicedevice I-devicedevice O B-change-valuesyspercentage I-change-valuesyspercentage I-change-valuesyspercentage
 smart.home.decrease.percentage, B-commandcommand I-commandcommand B-allall I-allall B-devicedevice I-devicedevice O B-change-valuesyspercentage I-change-valuesyspercentage I-change-valuesyspercentage
-smart.home.decrease.percentage, O O O O O O B-roomroom I-roomroom I-roomroom O O B-devicedevice O O O O O O O O O O O O B-change-valuesyspercentage I-change-valuesyspercentage I-change-valuesyspercentage B-devicedevice I-devicedevice I-devicedevice O
-smart.home.decrease.percentage, O O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-change-valuesyspercentage I-change-valuesyspercentage I-change-valuesyspercentage
+smart.home.decrease.percentage, O O O O O O B-roomroom I-roomroom I-roomroom O O B-devicedevice I-devicedevice O O O O O O O O O O O B-change-valuesyspercentage I-change-valuesyspercentage I-change-valuesyspercentage B-devicedevice I-devicedevice I-devicedevice O
+smart.home.decrease.percentage, B-commandcommand O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-change-valuesyspercentage I-change-valuesyspercentage I-change-valuesyspercentage
 smart.home.decrease.percentage, B-commandcommand I-commandcommand B-devicedevice I-devicedevice I-devicedevice O B-final-valuesyspercentage I-final-valuesyspercentage I-final-valuesyspercentage
 smart.home.decrease.percentage, O O O B-devicedevice I-devicedevice I-devicedevice I-devicedevice O B-roomroom I-roomroom
 smart.home.decrease.percentage, B-commandcommand I-commandcommand B-allall B-devicedevice I-devicedevice I-devicedevice O B-change-valuesyspercentage I-change-valuesyspercentage I-change-valuesyspercentage
