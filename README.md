@@ -145,10 +145,10 @@ Example:
    6.  Training model
     ```
         python3 train.py --token_level word-level --model_type phobert \
-        --model_dir ./trained_models/filtering_model --data_dir BKAI \
+        --model_dir ./trained_models --data_dir BKAI \
         --intent_label_file intent_label.txt --slot_label_file slot_label.txt \
         --rule_file ./BKAI/rule.csv --train_type augment_train_val_plus \
-        --val_type augment_val --test_type augment_val \
+        --val_type augment_val --test_type test \
         --seed 11 --do_train --do_eval --num_train_epochs 50 \
         --tuning_metric mean_intent_slot --use_crf --gpu_id 0 \
         --embedding_type soft --intent_loss_coef 0.7 \
