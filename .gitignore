@@ -7,3 +7,5 @@ models/
 RDRsegmenter/
 *workspace*
 *.pyc
+*.zip
+.DS_Store

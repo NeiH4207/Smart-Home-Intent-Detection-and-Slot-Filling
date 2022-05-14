@@ -262,10 +262,10 @@ def filter(pred_config):
     #     json.dump(before_slot_filtered_reports, f, indent=4)
     # with open(pred_config.output_dir + "/filtered_slot_reports.json", 'w') as f:
     #     json.dump(slot_filtered_reports, f, indent=4)
-    print(before_intent_filtered_reports)
-    print(intent_filtered_reports)
-    print(before_slot_filtered_reports)
-    print(slot_filtered_reports)
+    print(json.dumps(before_intent_filtered_reports, indent=4))
+    print(json.dumps(intent_filtered_reports, indent=4))
+    print(json.dumps(before_slot_filtered_reports, indent=4))
+    print(json.dumps(slot_filtered_reports, indent=4))
     logger.info("filterion Done!")
 
 
