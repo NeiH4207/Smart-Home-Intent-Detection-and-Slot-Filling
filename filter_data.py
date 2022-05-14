@@ -230,10 +230,10 @@ def filter(pred_config):
             temp_intent_entropy_threshold = intent_entropy_threshold
             temp_slot_entropy_threshold = slot_entropy_threshold
             temp_max_collect_num = max_collect_num
-            # if labels[i] in ['smart.home.decrease.level', 'smart.home.increase.level', 'smart.home.set.level']:
-            #     temp_intent_entropy_threshold *= 2
-            #     temp_slot_entropy_threshold *= 2
-            #     temp_max_collect_num *= 1.3
+            if labels[i] in ['smart.home.decrease.level', 'smart.home.increase.level', 'smart.home.set.level']:
+                temp_intent_entropy_threshold *= 1.5
+                temp_slot_entropy_threshold *= 1.5
+                temp_max_collect_num *= 1.25
             if intent_filtered_reports[labels[i]] > temp_max_collect_num:
                 continue
             if labels[i] == 'greeting' or intent_entropies[i] < temp_intent_entropy_threshold and \
