@@ -86,8 +86,8 @@ class DataLoader(object):
             ]
         }
         
-        self.key_words = ['tăng', 'giảm', 'lên', 'xuống', 'mức', 'hơi', 'ánh', 'màu', 'thêm',
-                    'cấp', 'bật', 'hạ', 'thay', 'đổi', 'số', 'chỉnh', 'điều']
+        self.key_words = ['tăng', 'giảm', 'lên', 'xuống', 'mức', 'hơi', 'ánh', 'độ', 'màu', 'thêm',
+                    'cấp', 'bật', 'hạ', 'thay', 'đổi', 'số', 'chỉnh', 'điều', 'cái']
         
     def make_dict(self, dataset):
         for sentence, intent, slots in zip(dataset['data'], dataset['intent_label'], dataset['slot_label']):
