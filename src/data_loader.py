@@ -2,6 +2,7 @@ import copy
 import json
 import logging
 import os
+import pickle
 from random import shuffle, uniform
 import numpy as np
 
@@ -139,6 +140,14 @@ class DataLoader(object):
                         break
                 if _n_suffix < 6 and _n_suffix > 0 and (words[-_n_suffix:], slots[-_n_suffix-1:-1]) not in self.dictionary['suffix']:
                     self.dictionary['suffix'].append((words[-_n_suffix:], slots[-_n_suffix-1:-1]))
+    
+    def save_dict(self, path):
+        with open(path, 'wb') as f:
+            pickle.dump(self.dictionary, f)
+    
+    def load_dict(self, path):
+        with open(path, 'rb') as f:
+            self.dictionary = pickle.load(f)
     
     def update_prob(self, probs, idx, discount_rate):
         diff = (probs[idx] - probs[idx] * discount_rate) / (len(probs) - 1)

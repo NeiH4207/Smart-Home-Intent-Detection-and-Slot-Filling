@@ -34,6 +34,8 @@ def parse_args():
                         help='name of the intent label file')
     parser.add_argument('--slot-label-file', type=str, default='train/slot_label.txt',
                         help='name of the slot label file')
+    parser.add_argument('--dict_path', type=str, default='BKAI/dict.pkl',
+                        help='path to the dictionary file')
     parser.add_argument('-k', '--K', type=int, default=7,
                         help='number of generated examples')
     parser.add_argument('--seed', type=int, default=1,
@@ -75,8 +77,12 @@ def main():
         intent_label_file=args.intent_label_file,
         slot_label_file=args.slot_label_file)
     
-    data_loader.make_dict(data_loader.dataset['train'])
-    data_loader.make_dict(data_loader.dataset['val'])
+    try:
+        data_loader.load_dict(args.dict_path)
+    except FileNotFoundError:
+        data_loader.make_dict(data_loader.dataset['train'])
+        data_loader.make_dict(data_loader.dataset['val'])
+        data_loader.save_dict(args.dict_path)
         
     agumented_train_dataset = data_loader.augment(data_loader.dataset['train'],
                                                   merge=True, drop_rate=0.5,
@@ -114,7 +120,7 @@ def main():
     data_loader.dump(path='BKAI/word-level/augment_train_val',
                         dataset=agumented_train_val_dataset)
                    
-                   
+    
                    
     # statistic the number of intent and slot for each label
     intent_label_dict = {}
