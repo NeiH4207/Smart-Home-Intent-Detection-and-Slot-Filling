@@ -68,7 +68,6 @@ class DataLoader(object):
             ],
             ('smart.home.set.level', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
-                (['ánh', 'sáng'], ['B-devicedevice', 'I-devicedevice']),
             ], 
             ('smart.home.set.percentage', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
