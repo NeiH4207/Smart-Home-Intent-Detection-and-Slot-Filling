@@ -86,7 +86,7 @@ class DataLoader(object):
             ]
         }
         
-        self.key_words = ['tăng', 'giảm', 'lên', 'xuống', 'mức', 'hơi', 'sáng', 'màu', 'thêm',
+        self.key_words = ['tăng', 'giảm', 'lên', 'xuống', 'mức', 'hơi', 'ánh', 'màu', 'thêm',
                     'cấp', 'bật', 'hạ', 'thay', 'đổi', 'số', 'chỉnh', 'điều']
         
     def make_dict(self, dataset):
