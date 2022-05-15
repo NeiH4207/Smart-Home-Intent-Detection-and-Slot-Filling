@@ -147,9 +147,7 @@ class Trainer(object):
                         if early_stopping.early_stop:
                             print("Early stopping")
                             break
-
-                    # if self.args.save_steps > 0 and global_step % self.args.save_steps == 0:
-                    #     self.save_model()
+                        self.evaluate("test")
 
                 if 0 < self.args.max_steps < global_step:
                     epoch_iterator.close()
@@ -158,7 +156,6 @@ class Trainer(object):
             if 0 < self.args.max_steps < global_step or early_stopping.early_stop:
                 train_iterator.close()
                 break
-            self.evaluate("test")
             print("Loss/train", tr_loss / global_step, _)
 
         return global_step, tr_loss / global_step
