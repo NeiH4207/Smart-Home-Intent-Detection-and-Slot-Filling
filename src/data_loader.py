@@ -56,7 +56,7 @@ class DataLoader(object):
                 (['toàn', 'bộ'], ['B-allall', 'I-allall'])
                 ],
             ('smart.home.device.onoff', 'B-allall'): [
-                
+                (['wc'], ['B-devicedevice'])
             ],
             
             ('smart.home.check.status', 'B-commandcommand'): [
@@ -208,7 +208,10 @@ class DataLoader(object):
             for key in self.dictionary:
                 dict_prob[key] = [1 / len(self.dictionary[key]) for _ in range(len(self.dictionary[key]))]
             
-            for _ in range(K):
+            if intent in ['smart.home.decrease.level', 'smart.home.increase.level', 'smart.home.set.level']:
+                k *= 1.25
+            
+            for _ in range(k):
                 p_words = []
                 p_slots = []
                 drop_p = uniform(0, 1)
