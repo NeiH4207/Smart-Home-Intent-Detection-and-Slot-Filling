@@ -68,15 +68,19 @@ class DataLoader(object):
             ],
             ('smart.home.set.level', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
+                (['wc'], ['B-devicedevice'])
             ], 
             ('smart.home.set.percentage', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
+                (['wc'], ['B-devicedevice'])
             ],
             ('smart.home.increase.level', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
+                (['wc'], ['B-devicedevice'])
             ],
             ('smart.home.increase.percentage', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
+                (['wc'], ['B-devicedevice'])
             ],
             ('smart.home.decrease.level', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
