@@ -147,7 +147,6 @@ class Trainer(object):
                         if early_stopping.early_stop:
                             print("Early stopping")
                             break
-                        self.evaluate("test")
 
                 if 0 < self.args.max_steps < global_step:
                     epoch_iterator.close()
