@@ -64,9 +64,7 @@ class Trainer(object):
             )
         else:
             t_total = len(train_dataloader) // self.args.gradient_accumulation_steps * self.args.num_train_epochs
-        print("check init")
-        results = self.evaluate("dev")
-        print(results)
+
         # Prepare optimizer and schedule (linear warmup and decay)
         no_decay = ["bias", "LayerNorm.weight"]
         optimizer_grouped_parameters = [
@@ -160,6 +158,7 @@ class Trainer(object):
             if 0 < self.args.max_steps < global_step or early_stopping.early_stop:
                 train_iterator.close()
                 break
+            self.evaluate("test")
             print("Loss/train", tr_loss / global_step, _)
 
         return global_step, tr_loss / global_step
