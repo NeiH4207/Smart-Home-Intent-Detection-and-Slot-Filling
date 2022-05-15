@@ -56,7 +56,7 @@ class DataLoader(object):
                 (['toàn', 'bộ'], ['B-allall', 'I-allall'])
                 ],
             ('smart.home.device.onoff', 'B-allall'): [
-                (['wc'], ['B-devicedevice'])
+                (['wc'], ['B-roomroom'])
             ],
             
             ('smart.home.check.status', 'B-commandcommand'): [
@@ -68,19 +68,19 @@ class DataLoader(object):
             ],
             ('smart.home.set.level', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
-                (['wc'], ['B-devicedevice'])
+                (['wc'], ['B-roomroom'])
             ], 
             ('smart.home.set.percentage', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
-                (['wc'], ['B-devicedevice'])
+                (['wc'], ['B-roomroom'])
             ],
             ('smart.home.increase.level', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
-                (['wc'], ['B-devicedevice'])
+                (['wc'], ['B-roomroom'])
             ],
             ('smart.home.increase.percentage', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
-                (['wc'], ['B-devicedevice'])
+                (['wc'], ['B-roomroom'])
             ],
             ('smart.home.decrease.level', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall']),
