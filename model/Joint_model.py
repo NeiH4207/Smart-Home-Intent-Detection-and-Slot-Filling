@@ -96,9 +96,9 @@ class JointGLU(RobertaPreTrainedModel):
 
         if args.use_crf:
             self.crf = CRF(num_tags=self.num_slot_labels, batch_first=True)
-            
-        self.rule_matrix = pd.read_csv(args.rule_file, sep=',', header=None).to_numpy()
-        self.rule_matrix = torch.FloatTensor(self.rule_matrix)
+        if args.use_rule_based:
+            self.rule_matrix = pd.read_csv(args.rule_file, sep=',', header=None).to_numpy()
+            self.rule_matrix = torch.FloatTensor(self.rule_matrix)
         self.alpha = 0.5
         
     def forward(self, input_ids, attention_mask, token_type_ids, 
