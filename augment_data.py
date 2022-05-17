@@ -123,8 +123,8 @@ def main():
     
                    
     # statistic the number of intent and slot for each label
-    intent_label_dict = {}
-    slot_label_dict = {}
+    intent_label_dict = {'O': 0, 'PAD': 0}
+    slot_label_dict = {'O': 0, 'PAD': 0}
     for intent_label in intent_label_lst:
         intent_label_dict[intent_label] = 0
     for slot_label in slot_label_lst:
@@ -147,10 +147,11 @@ def main():
     plt.xticks(intent_label_lst, intent_label_lst, rotation=90)
     plt.title('Intent')
     plt.subplot(1, 2, 2)
-    plt.bar(slot_label_lst[:-2], [math.log(slot_label_dict[label] + 1) for label in slot_label_lst[:-2]], align='center')
-    plt.xticks(slot_label_lst[:-2], slot_label_lst[:-2], rotation=90)
+    plt.bar(slot_label_lst, [math.log(slot_label_dict[label] + 1) for label in slot_label_lst], align='center')
+    plt.xticks(slot_label_lst, slot_label_lst, rotation=90)
     plt.title('Slot')
     plt.savefig('BKAI/word-level/augment_train_val_plus/statistic.png')
+    plt.show()
     
     
 if __name__ == '__main__':
