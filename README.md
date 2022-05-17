@@ -176,10 +176,10 @@ Example:
     ```
         python Smart-Home-Intent-Detection-and-Slot-Filling/filter_data.py --input_file ./BKAI/word-level/dev/seq.in \
         --model_dir ./drive/MyDrive/Colab/trained_models/filtering_model_1 --output_dir ./drive/MyDrive/Colab --batch_size 256 \
-        --intent_entropy_threshold 0.0075 --slot_entropy_threshold 1.0 --max_collect_num 10000
+        --intent_entropy_threshold 0.004 --slot_entropy_threshold 1.0 --max_collect_num 10000
         python Smart-Home-Intent-Detection-and-Slot-Filling/filter_data.py --input_file ./BKAI/word-level/train/seq.in \
         --model_dir ./drive/MyDrive/Colab/trained_models/filtering_model_1 --output_dir ./drive/MyDrive/Colab --batch_size 256 \
-        --intent_entropy_threshold 0.0075 --slot_entropy_threshold 100 --max_collect_num 10000
+        --intent_entropy_threshold 0.004 --slot_entropy_threshold 100 --max_collect_num 10000
     ```
 
     The label statistic is saved in ./output/filtered_reports.json
@@ -205,8 +205,8 @@ Example:
         --model_dir ./drive/MyDrive/Colab/trained_models --data_dir BKAI \
         --intent_label_file intent_label.txt --slot_label_file slot_label.txt \
         --rule_file ./BKAI/rule.csv --train_type augment_train_val_plus \
-        --val_type augment_val --test_type test --seed 11 --early_stopping 30\
-        --do_train --do_eval --num_train_epochs 150 --tuning_metric intent_acc \
+        --val_type augment_val --test_type test --seed 11 --early_stopping 50\
+        --do_train --do_eval --num_train_epochs 500 --tuning_metric intent_acc \
         --use_crf --gpu_id 0 --embedding_type soft --intent_loss_coef 0.7 \
         --learning_rate 0.00005 --dropout_rate 0.7 --attention_embedding_size 384 \
         --save_steps 50 --logging_steps 50 --use_rule_based --train_batch_size 32 
