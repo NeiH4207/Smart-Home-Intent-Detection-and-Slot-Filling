@@ -118,7 +118,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--use_rule_based",
-        default=True,
+        default=False,
         action="store_true",
         help="Whether to use rule to predict slot",
     )
