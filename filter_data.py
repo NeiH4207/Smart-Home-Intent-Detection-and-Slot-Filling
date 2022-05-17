@@ -253,15 +253,15 @@ def filter(pred_config):
                 before_slot_filtered_reports[slot] += 1
     
     # save reports
-    # with open(pred_config.output_dir + "/reports.json", 'w') as f:
-    #     json.dump(before_intent_filtered_reports, f, indent=4)
-    # with open(pred_config.output_dir + "/filtered_reports.json", 'w') as f:
-    #     json.dump(intent_filtered_reports, f, indent=4)
+    with open(pred_config.output_dir + "/reports.json", 'w') as f:
+        json.dump(before_intent_filtered_reports, f, indent=4)
+    with open(pred_config.output_dir + "/filtered_reports.json", 'w') as f:
+        json.dump(intent_filtered_reports, f, indent=4)
         
-    # with open(pred_config.output_dir + "/slot_reports.json", 'w') as f:
-    #     json.dump(before_slot_filtered_reports, f, indent=4)
-    # with open(pred_config.output_dir + "/filtered_slot_reports.json", 'w') as f:
-    #     json.dump(slot_filtered_reports, f, indent=4)
+    with open(pred_config.output_dir + "/slot_reports.json", 'w') as f:
+        json.dump(before_slot_filtered_reports, f, indent=4)
+    with open(pred_config.output_dir + "/filtered_slot_reports.json", 'w') as f:
+        json.dump(slot_filtered_reports, f, indent=4)
     print(json.dumps(before_intent_filtered_reports, indent=4))
     print(json.dumps(intent_filtered_reports, indent=4))
     print(json.dumps(before_slot_filtered_reports, indent=4))

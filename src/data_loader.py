@@ -44,54 +44,13 @@ class DataLoader(object):
         self.slot_label_encoder = None
 
         self.dictionary = {
-            'prefix': [
-                (['đang', 'học', 'bài', 'vui', 'lòng'], ['O', 'O', 'O', 'O', 'O']),  
+            'prefix': [ 
                 ], 
             'suffix': [
-                (['đê'], ['O']),
-                (['chỉ', '1', 'chút', 'thôi','nhé'], ['O', 'O', 'O', 'O', 'O']),
-                (['để', 'chủ', 'nhân', 'tắm'], ['O', 'O', 'O', 'O']),
-                ],
-            ('smart.home.check.status', 'B-allall'): [
-                (['toàn', 'bộ'], ['B-allall', 'I-allall'])
-                ],
-            ('smart.home.device.onoff', 'B-allall'): [
-                (['wc'], ['B-roomroom'])
-            ],
-            
-            ('smart.home.check.status', 'B-commandcommand'): [
-                (['báo', 'cáo'], ['B-commandcommand', 'I-commandcommand'])
-            ],
-            
-            ('smart.home.set.color', 'B-allall'): [
-                (['toàn', 'bộ'], ['B-allall', 'I-allall'])
-            ],
-            ('smart.home.set.level', 'B-allall'): [
-                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
-                (['wc'], ['B-roomroom'])
-            ], 
-            ('smart.home.set.percentage', 'B-allall'): [
-                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
-                (['wc'], ['B-roomroom'])
-            ],
-            ('smart.home.increase.level', 'B-allall'): [
-                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
-                (['wc'], ['B-roomroom'])
-            ],
-            ('smart.home.increase.percentage', 'B-allall'): [
-                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
-                (['wc'], ['B-roomroom'])
-            ],
-            ('smart.home.decrease.level', 'B-allall'): [
-                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
-            ],
-            ('smart.home.decrease.percentage', 'B-allall'): [
-                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
-            ]
+                ]
         }
         
-        self.key_words = ['tăng', 'giảm', 'lên', 'xuống', 'mức', 'hơi', 'ánh', 'độ', 'sáng', 'màu', 'thêm',
-                    'cấp', 'bật', 'hạ', 'thay', 'đổi', 'số', 'chỉnh', 'điều', 'cái']
+        self.key_words = ['tăng', 'giảm', 'lên', 'xuống', 'mức', 'hơi', 'ánh', 'độ', 'sáng', 'màu', 'thêm', 'cấp', 'bật', 'hạ', 'thay', 'đổi', 'số', 'chỉnh', 'điều', 'cái']
         
     def make_dict(self, dataset):
         for sentence, intent, slots in zip(dataset['data'], dataset['intent_label'], dataset['slot_label']):

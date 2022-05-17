@@ -114,6 +114,7 @@ class JointGLU(RobertaPreTrainedModel):
         pool_hidden = torch.cat([hn, pool_hidden.squeeze(1), outputs.pooler_output], dim=-1).unsqueeze(1)
         linear_intent = self.intent_classifier(pool_hidden)
         intent_logits = F.log_softmax(linear_intent.squeeze(1), dim=-1)
+        # SLU
         rep_intent = torch.cat([linear_intent] * input_ids.size(1), dim=1)
         attn_hidden = self._d_attention(lstm_hidden)
         com_hidden = torch.cat([rep_intent, attn_hidden], dim=-1)
