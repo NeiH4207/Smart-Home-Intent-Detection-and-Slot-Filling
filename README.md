@@ -194,7 +194,7 @@ Example:
     ```
    5.  Make rule matrix
     ```
-        python3 make_rules.py  --model_dir ./trained_models/filtering_model
+       python3 Smart-Home-Intent-Detection-and-Slot-Filling/make_rules.py --model_dir ./drive/MyDrive/Colab/trained_models/filtering_model
     ```
 
    6.  Training model

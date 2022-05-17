@@ -107,6 +107,7 @@ def main():
     agumented_val_dataset = data_loader.augment(data_loader.dataset['val'], 
                                                 merge=False, drop_rate=0.5, change_rate=1.0, K=args.K)
     agumented_train_val_dataset = deepcopy(agumented_train_dataset)
+    train_val_dataset = deepcopy(data_loader.dataset['train'])
     
     for sentence, intent, slots in zip(agumented_val_dataset['data'],
                                         agumented_val_dataset['intent_label'],
@@ -114,12 +115,21 @@ def main():
         agumented_train_val_dataset['data'].append(sentence)
         agumented_train_val_dataset['intent_label'].append(intent)
         agumented_train_val_dataset['slot_label'].append(slots)
+    
+    for sentence, intent, slots in zip(data_loader.dataset['val']['data'],
+                                        data_loader.dataset['val']['intent_label'],
+                                        data_loader.dataset['val']['slot_label']):
+        train_val_dataset['data'].append(sentence)
+        train_val_dataset['intent_label'].append(intent)
+        train_val_dataset['slot_label'].append(slots)
+                                    
         
     data_loader.dump(path='BKAI/word-level/augment_val',
                         dataset=agumented_val_dataset)
     data_loader.dump(path='BKAI/word-level/augment_train_val',
                         dataset=agumented_train_val_dataset)
-                   
+    data_loader.dump(path='BKAI/word-level/train_val',
+                        dataset=train_val_dataset)
     
                    
     # statistic the number of intent and slot for each label
