@@ -1,6 +1,5 @@
 import argparse
-
-from src.data_loader import load_and_cache_examples
+from src.data_loader import DataLoader, load_and_cache_examples
 from src.trainer import Trainer
 from src.utils import MODEL_CLASSES, MODEL_PATH_MAP, init_logger, load_tokenizer, set_seed
 # ignore warnings  
@@ -11,10 +10,12 @@ def main(args):
     init_logger()
     set_seed(args)
     tokenizer = load_tokenizer(args)
+    data_loader = DataLoader()
+    data_loader.load_spelling_dict(args.speelling_dict_file)
 
-    train_dataset = load_and_cache_examples(args, tokenizer, mode=args.train_type)
-    dev_dataset = load_and_cache_examples(args, tokenizer, mode=args.val_type)
-    test_dataset = load_and_cache_examples(args, tokenizer, mode=args.test_type)
+    train_dataset = load_and_cache_examples(args, tokenizer, mode=args.train_type, spell_dict=data_loader.spelling_dict)
+    dev_dataset = load_and_cache_examples(args, tokenizer, mode=args.val_type, spell_dict=data_loader.spelling_dict)
+    test_dataset = load_and_cache_examples(args, tokenizer, mode=args.test_type, spell_dict=data_loader.spelling_dict)
 
     trainer = Trainer(args, train_dataset, dev_dataset, test_dataset)
 
@@ -150,7 +151,11 @@ if __name__ == "__main__":
 
     parser.add_argument("--train_type", default="train", type=str, help="Train type")
     parser.add_argument("--val_type", default="dev", type=str, help="Eval type")
-    parser.add_argument("--test_type", default="dev", type=str, help="Eval type")
+    parser.add_argument("--test_type", default="test", type=str, help="Eval type")
+    
+    parser.add_argument("--speelling_dict_file", 
+                        default="BKAI/word-level/spelling_dict.txt", 
+                        type=str, help="Spelling dict file")
     
     args = parser.parse_args()
     args.eval_batch_size = args.train_batch_size

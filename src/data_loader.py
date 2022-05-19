@@ -1,4 +1,6 @@
+from collections import OrderedDict
 import copy
+from enum import unique
 import json
 import logging
 import os
@@ -12,7 +14,6 @@ from src.utils import get_intent_labels, get_slot_labels
 
 
 logger = logging.getLogger(__name__)
-
 
 class DataLoader(object):
     """
@@ -50,8 +51,23 @@ class DataLoader(object):
                 ]
         }
         
-        self.key_words = ['tăng', 'giảm', 'lên', 'xuống', 'mức', 'hơi', 'ánh', 'độ', 'sáng', 'màu', 'thêm', 'cấp', 'bật', 'hạ', 'thay', 'đổi', 'số', 'chỉnh', 'điều', 'cái']
+        self.spelling_dict = {}
         
+        self.key_words = ['tăng', 'giảm', 'lên', 'xuống', 'mức', 'hơi', 'ánh', 'độ', 'sáng', 'màu', 'thêm', 'cấp', 'bật', 'hạ', 'thay', 'đổi', 'số', 'chỉnh', 'điều', 'cái']
+    
+    def load_spelling_dict(self, path):
+        try:
+            with open(path, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    # split \t or space
+                    old, new = line.split()
+                    self.spelling_dict[old] = new
+        except Exception as e:
+            print('Error: {}, skip loading spelling dict'.format(e))
+            self.spelling_dict = {}
+            
+    
     def make_dict(self, dataset):
         for sentence, intent, slots in zip(dataset['data'], dataset['intent_label'], dataset['slot_label']):
             words = sentence.split()
@@ -360,13 +376,27 @@ class JointProcessor(object):
                 lines.append(line.strip())
             return lines
 
-    def _create_examples(self, texts, intents, slots, set_type):
+    def unique_normalize(self, text):
+        """
+        remove duplicate and keep order char
+        """
+        return "".join(OrderedDict.fromkeys(text))
+
+    def _create_examples(self, texts, intents, slots, set_type, spell_dict={}, use_spell=True):
         """Creates examples for the training and dev sets."""
         examples = []
         for i, (text, intent, slot) in enumerate(zip(texts, intents, slots)):
             guid = "%s-%s" % (set_type, i)
             # 1. input_text
-            words = text.split()  # Some are spaced twice
+            _words = text.split()  # Some are spaced twice
+            words = []
+            for word in _words:
+                word = self.unique_normalize(word)
+                if use_spell and word in spell_dict:
+                    words.append(spell_dict[word])
+                else:
+                    words.append(word)
+            
             # 2. intent
             intent_label = (
                 self.intent_labels.index(intent) if intent in self.intent_labels else self.intent_labels.index("UNK")
@@ -383,7 +413,7 @@ class JointProcessor(object):
             examples.append(InputExample(guid=guid, words=words, intent_label=intent_label, slot_labels=slot_labels, real_len=real_len))
         return examples
 
-    def get_examples(self, mode):
+    def get_examples(self, mode, spell_dict={}):
         """
         Args:
             mode: train, dev, test
@@ -395,6 +425,7 @@ class JointProcessor(object):
             intents=self._read_file(os.path.join(data_path, self.intent_label_file)),
             slots=self._read_file(os.path.join(data_path, self.slot_labels_file)),
             set_type=mode,
+            spell_dict=spell_dict,
         )
 
 
@@ -500,7 +531,7 @@ def convert_examples_to_features(
     return features
 
 
-def load_and_cache_examples(args, tokenizer, mode):
+def load_and_cache_examples(args, tokenizer, mode, spell_dict={}):
     processor = processors[args.token_level](args)
 
     # Load data features from cache or dataset file
@@ -518,9 +549,9 @@ def load_and_cache_examples(args, tokenizer, mode):
         # Load data features from dataset file
         if mode in ["train", "augment_train", "augment_train_val", "augment_val", "augment_train_val_plus",
                     "train_val", "train_val_test", "dev"]:
-            examples = processor.get_examples(mode)
+            examples = processor.get_examples(mode, spell_dict=spell_dict)
         elif mode == "test":
-            examples = processor.get_examples(mode)
+            examples = processor.get_examples(mode, spell_dict=spell_dict)
         else:
             raise Exception("For mode {}, Only train, dev, test is available".format(mode))
 
