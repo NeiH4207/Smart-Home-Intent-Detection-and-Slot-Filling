@@ -207,6 +207,10 @@ def filter(pred_config):
     filter_intent_label_lst_file = filter_path + '/filtered_label'
     filter_slot_input_file = filter_path + '/filtered_seq.out'
     
+    noise_intent_input_file = filter_path + '/noise_seq.in'
+    noise_intent_label_lst_file = filter_path + '/noise_label'
+    noise_slot_input_file = filter_path + '/noise_seq.out'
+    
     before_intent_filtered_reports = {}
     before_slot_filtered_reports = {}
     
@@ -225,17 +229,14 @@ def filter(pred_config):
         
     with open(filter_intent_input_file, 'w') as f_intent_input, \
             open(filter_intent_label_lst_file, 'w') as f_intent_label_lst, \
-            open(filter_slot_input_file, 'w') as f_slot_input:
+            open(filter_slot_input_file, 'w') as f_slot_input, \
+            open(noise_intent_input_file, 'w') as f_noise_intent_input, \
+            open(noise_intent_label_lst_file, 'w') as f_noise_intent_label_lst, \
+            open(noise_slot_input_file, 'w') as f_noise_slot_input:
         for i in range(len(intent_entropies)):
             temp_intent_entropy_threshold = intent_entropy_threshold
             temp_slot_entropy_threshold = slot_entropy_threshold
             temp_max_collect_num = max_collect_num
-            if labels[i] in ['smart.home.decrease.level', 'smart.home.increase.level', 'smart.home.set.level']:
-                temp_intent_entropy_threshold *= 1.5
-                temp_slot_entropy_threshold *= 1.5
-                temp_max_collect_num *= 1.25
-            if intent_filtered_reports[labels[i]] > temp_max_collect_num:
-                continue
             if labels[i] == 'greeting' or intent_entropies[i] < temp_intent_entropy_threshold and \
                     (slot_entropies[i] < temp_slot_entropy_threshold or\
                         'statusstatus' in slots[i] or\
@@ -247,7 +248,11 @@ def filter(pred_config):
                 intent_filtered_reports[labels[i]] += 1    
                 for slot in slots[i].split(' '):
                     slot_filtered_reports[slot] += 1
-                    
+            else:
+                f_noise_intent_input.write(' '.join(lines[i]) + '\n')
+                f_noise_intent_label_lst.write(labels[i] + '\n')
+                f_noise_slot_input.write(slots[i] + '\n')
+                
             before_intent_filtered_reports[labels[i]] += 1 
             for slot in slots[i].split(' '):
                 before_slot_filtered_reports[slot] += 1
@@ -262,10 +267,10 @@ def filter(pred_config):
         json.dump(before_slot_filtered_reports, f, indent=4)
     with open(pred_config.output_dir + "/filtered_slot_reports.json", 'w') as f:
         json.dump(slot_filtered_reports, f, indent=4)
-    print(json.dumps(before_intent_filtered_reports, indent=4))
-    print(json.dumps(intent_filtered_reports, indent=4))
-    print(json.dumps(before_slot_filtered_reports, indent=4))
-    print(json.dumps(slot_filtered_reports, indent=4))
+    print(before_intent_filtered_reports)
+    print(intent_filtered_reports)
+    print(before_slot_filtered_reports)
+    print(slot_filtered_reports)
     logger.info("filterion Done!")
 
 
@@ -273,12 +278,12 @@ if __name__ == "__main__":
     init_logger()
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--input_file", default="BKAI/word-level/augment_train_val_plus/seq.in", type=str, help="Input file for filterion")
+    parser.add_argument("--input_file", default="BKAI/word-level/dev/seq.in", type=str, help="Input file for filterion")
     parser.add_argument("--model_dir", default="./trained_models/filtering_model", type=str, help="Path to save, load model")
 
     parser.add_argument("--batch_size", default=128, type=int, help="Batch size for filterion")
-    parser.add_argument("--intent_entropy_threshold", default=1.0, type=float, help="Entropy intent threshold")
-    parser.add_argument("--slot_entropy_threshold", default=1.0, type=float, help="Entropy slot threshold")
+    parser.add_argument("--intent_entropy_threshold", default=0.0075, type=float, help="Entropy intent threshold")
+    parser.add_argument("--slot_entropy_threshold", default=10.0, type=float, help="Entropy slot threshold")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
     parser.add_argument("--max_collect_num", default=1200, type=int, help="Max collect num")
     parser.add_argument("--output_dir", default="output/", type=str, help="Output file for filterion")
