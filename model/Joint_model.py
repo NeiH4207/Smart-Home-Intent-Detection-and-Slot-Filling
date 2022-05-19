@@ -171,7 +171,7 @@ class JointGLU(RobertaPreTrainedModel):
         if self.args.use_rule_based:
             slot_probs = torch.exp(slot_logits.permute(1, 0, 2))
             num_words = slot_probs.shape[0]
-            # mse_loss_fct = nn.MSELoss()
+            mse_loss_fct = nn.MSELoss()
             for T in range(num_words):
                 if T == 0:
                     continue
@@ -179,7 +179,7 @@ class JointGLU(RobertaPreTrainedModel):
                 onehot_vec = F.one_hot(argmax_idx, self.num_slot_labels).float()
                 slot_probs[T] *= torch.matmul(onehot_vec, self.rule_matrix.to(self.device))
                 slot_probs[T] /= torch.sum(slot_probs[T], dim=1, keepdim=True)
-                # total_loss += mse_loss_fct(slot_probs[T], torch.exp(slot_logits.permute(1, 0, 2)[T]))
+            total_loss += mse_loss_fct(slot_probs.detach(), torch.exp(slot_logits.permute(1, 0, 2)))
             slot_logits = torch.log(slot_probs.permute(1, 0, 2))
             
         outputs = ((intent_logits, slot_logits),) + outputs[2:]  # add hidden states and attention if they are here
