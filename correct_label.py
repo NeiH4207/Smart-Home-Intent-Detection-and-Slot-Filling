@@ -281,9 +281,6 @@ if __name__ == "__main__":
     
     parser.add_argument("--model_dir", default="./trained_models/filtering_model", type=str, help="Path to save, load model")
     parser.add_argument("--batch_size", default=32, type=int, help="Batch size for filterion")
-    parser.add_argument("--intent_entropy_threshold", default=0.0075, type=float, help="Entropy intent threshold")
-    parser.add_argument("--slot_entropy_threshold", default=10.0, type=float, help="Entropy slot threshold")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
-    parser.add_argument("--max_collect_num", default=1200, type=int, help="Max collect num")
     pred_config = parser.parse_args()
     correct_label(pred_config)
