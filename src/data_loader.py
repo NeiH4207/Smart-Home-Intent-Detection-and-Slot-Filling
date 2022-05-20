@@ -398,10 +398,14 @@ class JointProcessor(object):
         self.args = args
         self.intent_labels = get_intent_labels(args)
         self.slot_labels = get_slot_labels(args)
-        if args.use_filter:
+        if args.filter == 'only_filter':
             self.input_text_file = "filtered_seq.in"
             self.intent_label_file = "filtered_label"
             self.slot_labels_file = "filtered_seq.out"
+        elif args.filter == 'corrected_label':
+            self.input_text_file = "final_seq.in"
+            self.intent_label_file = "final_label"
+            self.slot_labels_file = "final_seq.out"
         else:
             self.input_text_file = "seq.in"
             self.intent_label_file = "label"

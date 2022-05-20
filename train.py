@@ -124,9 +124,9 @@ if __name__ == "__main__":
         help="Whether to use rule to predict slot",
     )
     parser.add_argument(
-        "--use_filter",
-        default=False,
-        action="store_true",
+        "--filter",
+        default=None,
+        type=str,
         help="Whether to use rule to predict slot",
     )
     parser.add_argument(

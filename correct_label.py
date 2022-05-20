@@ -12,6 +12,8 @@ from src.utils import MODEL_CLASSES, get_intent_labels, get_slot_labels, init_lo
 from scipy.stats import entropy
 
 import matplotlib.pyplot as plt
+# import KNN
+from sklearn.neighbors import KNeighborsClassifier
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +24,6 @@ def get_device(pred_config):
 
 def get_args(pred_config):
     return torch.load(os.path.join(pred_config.model_dir, "training_args.bin"))
-
 
 def load_model(pred_config, args, device):
     # Check whether model exists
@@ -134,23 +135,155 @@ def correct_label(pred_config):
     # load model and args
     args = get_args(pred_config)
     set_seed(args)
-    device = get_device(pred_config)
-    model = RobertaPreTrainedModel.from_pretrained(pred_config.model_dir, args=args)
+    device = get_device(pred_config)        
+    intent_label_lst = get_intent_labels(args)
+    slot_label_lst = get_slot_labels(args)
+    config_class, model_class, _ = MODEL_CLASSES[args.model_type]
+    config = config_class.from_pretrained(args.model_name_or_path, finetuning_task=args.token_level)
+    model = model_class.from_pretrained(
+        args.model_name_or_path,
+        config=config,
+        args=args,
+        intent_label_lst=intent_label_lst,
+        slot_label_lst=slot_label_lst,
+            )
+    labels = []
+    with open(pred_config.label_standard_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            labels.append(line)
+    
+    noise_labels = []
+    with open(pred_config.label_noise_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            noise_labels.append(line)
+    
+    standard_slot_labels = []
+    with open(pred_config.slot_label_standard_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            standard_slot_labels.append(line)
+    
+    noise_slot_labels = []
+    with open(pred_config.slot_label_noise_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            noise_slot_labels.append(line)
+    
+    tokenizer = load_tokenizer(args)
     logger.info(args)
+    noise_data = []
+    stardard_data = []
+    
+    with open(pred_config.input_noise_file, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            words = line.split()
+            noise_data.append(words)
+            
+    with open(pred_config.input_standard_file, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            words = line.split()
+            stardard_data.append(words)
+        
+    # convert to tensor
+    pad_token_label_id = args.ignore_index
+    noise_dataset = convert_input_file_to_tensor_dataset(noise_data, pred_config, args, tokenizer, pad_token_label_id)
+    standard_dataset = convert_input_file_to_tensor_dataset(stardard_data, pred_config, args, tokenizer, pad_token_label_id)
+    
+    model.to(device)
+    model.eval()
+    noise_features = []
+    standard_features = []
+    
+    with torch.no_grad():
+        noise_dataloader = DataLoader(noise_dataset, batch_size=pred_config.batch_size, shuffle=False)
+        for i, (input_ids, attention_mask, token_type_ids, slot_label_mask) in enumerate(noise_dataloader):
+            input_ids = input_ids.to(device)
+            attention_mask = attention_mask.to(device)
+            token_type_ids = token_type_ids.to(device)
+            slot_label_mask = slot_label_mask.to(device)
+            features = model.get_features(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+            noise_features.append(features)
+        standard_dataloader = DataLoader(standard_dataset, batch_size=pred_config.batch_size, shuffle=False)
+        for i, (input_ids, attention_mask, token_type_ids, slot_label_mask) in enumerate(standard_dataloader):
+            input_ids = input_ids.to(device)
+            attention_mask = attention_mask.to(device)
+            token_type_ids = token_type_ids.to(device)
+            slot_label_mask = slot_label_mask.to(device)
+            features = model.get_features(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+            standard_features.append(features)
+            
+    # Implement KNN Model to label the noise data
+    noise_features = torch.cat(noise_features, dim=0)
+    standard_features = torch.cat(standard_features, dim=0)
+    noise_features = noise_features.cpu().numpy()
+    standard_features = standard_features.cpu().numpy()
+    knn = KNeighborsClassifier(n_neighbors=6)
+    knn.fit(standard_features, labels)
+    pred_labels = knn.predict(noise_features)
+    
+    corrected_dict = {}
+    num_corrected_same_noise = 0
+    for i in range(len(pred_labels)):
+        key = noise_labels[i] + ' -> '+ pred_labels[i]
+        if noise_labels[i] == pred_labels[i]:
+            key += ' (correct)'
+            num_corrected_same_noise += 1
+        if key not in corrected_dict:
+            corrected_dict[key] = 1
+        else:
+            corrected_dict[key] += 1
+    print(json.dumps(corrected_dict, indent=4))
+    print('num corrected same noise labels: ', num_corrected_same_noise)
+    print('Num different noise labels: ', len(noise_labels) - num_corrected_same_noise)
+    logger.info("Finish predicting")
+    
+    # Merge the corrected labels with the original labels and save
+    final_label_file = pred_config.label_noise_file.replace('noise', 'final')
+    final_input_file = pred_config.input_noise_file.replace('noise', 'final')
+    final_slot_label_file = pred_config.slot_label_noise_file.replace('noise', 'final')
+    
+    with open(final_label_file, 'w', encoding='utf-8') as f:
+        for i in range(len(labels)):
+            f.write(labels[i]+'\n')
+        for i in range(len(pred_labels)):
+            f.write(pred_labels[i]+'\n')
+            
+    with open(final_input_file, 'w', encoding='utf-8') as f:
+        for i in range(len(stardard_data)):
+            f.write(' '.join(stardard_data[i])+'\n')
+        for i in range(len(noise_data)):
+            f.write(' '.join(noise_data[i])+'\n')
+            
+    with open(final_slot_label_file, 'w', encoding='utf-8') as f:
+        for i in range(len(standard_slot_labels)):
+            f.write(standard_slot_labels[i]+'\n')
+        for i in range(len(noise_slot_labels)):
+            f.write(noise_slot_labels[i]+'\n')
+            
+            
+    logger.info("Finish saving")
     
 if __name__ == "__main__":
     init_logger()
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--input_noise_file", default="BKAI/word-level/dev/noise_seq.in", type=str, help="Input file need to be corrected")
+    parser.add_argument("--label_noise_file", default="BKAI/word-level/dev/noise_label", type=str, help="Label file for training")
+    parser.add_argument("--slot_label_noise_file", default="BKAI/word-level/dev/noise_seq.out", type=str, help="Slot label file for training")
+    
     parser.add_argument("--input_standard_file", default="BKAI/word-level/dev/filtered_seq.in", type=str, help="Input file for training")
+    parser.add_argument("--label_standard_file", default="BKAI/word-level/dev/filtered_label", type=str, help="Label file for training")
+    parser.add_argument("--slot_label_standard_file", default="BKAI/word-level/dev/filtered_seq.out", type=str, help="Slot label file for training")
+    
     parser.add_argument("--model_dir", default="./trained_models/filtering_model", type=str, help="Path to save, load model")
-
-    parser.add_argument("--batch_size", default=128, type=int, help="Batch size for filterion")
+    parser.add_argument("--batch_size", default=32, type=int, help="Batch size for filterion")
     parser.add_argument("--intent_entropy_threshold", default=0.0075, type=float, help="Entropy intent threshold")
     parser.add_argument("--slot_entropy_threshold", default=10.0, type=float, help="Entropy slot threshold")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
     parser.add_argument("--max_collect_num", default=1200, type=int, help="Max collect num")
-    parser.add_argument("--output_dir", default="output/", type=str, help="Output file for filterion")
     pred_config = parser.parse_args()
     correct_label(pred_config)
