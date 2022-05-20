@@ -200,7 +200,7 @@ def correct_label(pred_config):
     
     with torch.no_grad():
         noise_dataloader = DataLoader(noise_dataset, batch_size=pred_config.batch_size, shuffle=False)
-        for i, (input_ids, attention_mask, token_type_ids, slot_label_mask) in enumerate(noise_dataloader):
+        for i, (input_ids, attention_mask, token_type_ids, slot_label_mask) in tqdm(enumerate(noise_dataloader)):
             input_ids = input_ids.to(device)
             attention_mask = attention_mask.to(device)
             token_type_ids = token_type_ids.to(device)
@@ -208,7 +208,7 @@ def correct_label(pred_config):
             features = model.get_features(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
             noise_features.append(features)
         standard_dataloader = DataLoader(standard_dataset, batch_size=pred_config.batch_size, shuffle=False)
-        for i, (input_ids, attention_mask, token_type_ids, slot_label_mask) in enumerate(standard_dataloader):
+        for i, (input_ids, attention_mask, token_type_ids, slot_label_mask) in tqdm(enumerate(standard_dataloader)):
             input_ids = input_ids.to(device)
             attention_mask = attention_mask.to(device)
             token_type_ids = token_type_ids.to(device)

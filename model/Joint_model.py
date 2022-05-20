@@ -193,8 +193,12 @@ class JointGLU(RobertaPreTrainedModel):
 
     def get_features(self, input_ids, attention_mask, token_type_ids):
         outputs = self.roberta(
-            input_ids, 
-            attention_mask=attention_mask, 
-            token_type_ids=token_type_ids,
-        ).pooler_output
-        return outputs
+            input_ids, attention_mask=attention_mask, 
+        )
+        attention_x = self._e_attention(outputs[0])
+        emb_attn_x = torch.cat([outputs[0], attention_x], dim=-1)
+        lstm_hidden, (hn, _) = self._lstm_layer(emb_attn_x)
+        hn = torch.cat([hn[0], hn[1]], dim=-1)
+        pool_hidden = torch.max(lstm_hidden, dim=1, keepdim=True).values
+        pool_hidden = torch.cat([hn, pool_hidden.squeeze(1), outputs.pooler_output], dim=-1)
+        return pool_hidden
