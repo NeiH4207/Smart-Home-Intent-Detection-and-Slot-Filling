@@ -171,15 +171,18 @@ class JointGLU(RobertaPreTrainedModel):
         if self.args.use_rule_based:
             slot_probs = torch.exp(slot_logits.permute(1, 0, 2))
             num_words = slot_probs.shape[0]
-            mse_loss_fct = nn.MSELoss()
             for T in range(num_words):
                 if T == 0:
                     continue
+                if T < num_words - 1:
+                    # make PAD to be 0
+                    for i in range(slot_probs[T].shape[0]):
+                        slot_probs[T][i][self.args.ignore_index] = 0
+                
                 argmax_idx = torch.argmax(slot_probs[T-1], dim=-1)
                 onehot_vec = F.one_hot(argmax_idx, self.num_slot_labels).float()
                 slot_probs[T] *= torch.matmul(onehot_vec, self.rule_matrix.to(self.device))
                 slot_probs[T] /= torch.sum(slot_probs[T], dim=1, keepdim=True)
-            total_loss += mse_loss_fct(slot_probs.detach(), torch.exp(slot_logits.permute(1, 0, 2)))
             slot_logits = torch.log(slot_probs.permute(1, 0, 2))
             
         outputs = ((intent_logits, slot_logits),) + outputs[2:]  # add hidden states and attention if they are here
@@ -187,3 +190,11 @@ class JointGLU(RobertaPreTrainedModel):
         outputs = (total_loss,) + outputs
 
         return outputs  # (loss), logits, (hidden_states), (attentions) # Logits is a tuple of intent and slot logits
+
+    def get_features(self, input_ids, attention_mask, token_type_ids):
+        outputs = self.roberta(
+            input_ids, 
+            attention_mask=attention_mask, 
+            token_type_ids=token_type_ids,
+        ).pooler_output
+        return outputs
