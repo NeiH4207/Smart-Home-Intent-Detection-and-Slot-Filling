@@ -416,8 +416,9 @@ class JointProcessor(object):
         """Reads a tab separated value file."""
         # check exists
         if not os.path.exists(input_file):
-            print("warning: file not exists: {}, using {} to replace".format(input_file, input_file.split('_')[-1]))
-            input_file = input_file.split('_')[-1]
+            _input_file = input_file.replace('filtered_', '').replace('final_', '')
+            print("warning: file not exists: {}, using {} to replace".format(input_file, _input_file))
+            input_file = _input_file
         with open(input_file, "r", encoding="utf-8") as f:
             lines = []
             for line in f:
