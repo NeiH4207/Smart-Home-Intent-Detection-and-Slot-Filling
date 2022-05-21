@@ -62,18 +62,26 @@ def make_rule(pred_config):
             if slot_label_lst[i][0] == 'B' and slot_label_lst[j][0] == 'I' and \
                 slot_label_lst[i][2:] != slot_label_lst[j][2:]:
                 rule_matrix[i, j] = 0
-                print(slot_label_lst[i], slot_label_lst[j])
+                # print(slot_label_lst[i], slot_label_lst[j])
             elif slot_label_lst[i][0] == 'B' and slot_label_lst[j][0] == 'B' and \
                 slot_label_lst[i][2:] == slot_label_lst[j][2:]:
                 rule_matrix[i, j] = 0
-                print(slot_label_lst[i], slot_label_lst[j])
+                # print(slot_label_lst[i], slot_label_lst[j])
             elif slot_label_lst[i][0] == 'O' and slot_label_lst[j][0] == 'I':
                 rule_matrix[i, j] = 0
-                print(slot_label_lst[i], slot_label_lst[j])
+                # print(slot_label_lst[i], slot_label_lst[j])
             elif slot_label_lst[i][0] == 'I' and slot_label_lst[j][0] == 'I' and \
                 slot_label_lst[i][2:] != slot_label_lst[j][2:]:
                 rule_matrix[i, j] = 0
-                print(slot_label_lst[i], slot_label_lst[j])
+                # print(slot_label_lst[i], slot_label_lst[j])
+            # I-* == B-*
+            elif slot_label_lst[i][0] == 'I' and slot_label_lst[j][0] == 'B' and \
+                slot_label_lst[i][2:] == slot_label_lst[j][2:]:
+                rule_matrix[i, j] = 0
+            if slot_label_lst[i] == "B-devicedevice" and slot_label_lst[j] == "B-sysnumbersysnumber":
+                rule_matrix[i, j] = 0
+                # print(slot_label_lst[i], slot_label_lst[j])
+                
     print(np.sum(rule_matrix))
     # save to csv 
     with open(pred_config.outfile, 'w', encoding='utf-8') as f:
