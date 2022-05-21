@@ -151,6 +151,7 @@ def main():
     model = load_model(pred_config, args, device)
     if pred_config.use_rule_based:
         args.use_rule_based = True
+        model.make_rule()
     logger.info(args)
 
     intent_label_lst = get_intent_labels(args)

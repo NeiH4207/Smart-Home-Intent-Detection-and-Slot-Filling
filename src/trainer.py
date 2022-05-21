@@ -43,6 +43,9 @@ class Trainer(object):
                 intent_label_lst=self.intent_label_lst,
                 slot_label_lst=self.slot_label_lst,
             )
+        
+        if args.use_rule_based:
+            self.model.make_rule()
         # GPU or CPU
         if torch.cuda.is_available() and not args.no_cuda :
             self.device = "cuda"
