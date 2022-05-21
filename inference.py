@@ -235,6 +235,8 @@ def main():
                     if slot_preds[i][0] == 'B' and slot_preds[i - 1][0] == 'B' and \
                         slot_preds[i][2:] == slot_preds[i - 1][2:]:
                         slot_preds[i] = slot_preds[i].replace('B', 'I')
+                    if slot_preds[i - 1] == "B-devicedevice" and slot_preds[i] == "B-sysnumbersysnumber":
+                        slot_preds[i] = "I-devicedevice"
                 if intent_pred == 'greeting':
                     slot_preds = ['O'] * len(words)
                     
