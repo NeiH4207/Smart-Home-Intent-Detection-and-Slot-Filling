@@ -234,7 +234,7 @@ def main():
                 for i in range(1, len(words)):
                     if slot_preds[i][0] == 'B' and slot_preds[i - 1][0] == 'B' and \
                         slot_preds[i][2:] == slot_preds[i - 1][2:]:
-                        slot_preds[i][0] = slot_preds[i][0].replace('B', 'I')
+                        slot_preds[i] = slot_preds[i].replace('B', 'I')
                 if intent_pred == 'greeting':
                     slot_preds = ['O'] * len(words)
                     
