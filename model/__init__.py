@@ -1,3 +1,2 @@
-from .Joint_model import JointGLU
-from .modeling_jointxlmr import JointXLMR
+from .Joint_model import JointGLU, JointXLMR
 from .Bi_model import BiModel
