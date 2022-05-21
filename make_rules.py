@@ -76,7 +76,7 @@ def make_rule(pred_config):
                 print(slot_label_lst[i], slot_label_lst[j])
     print(np.sum(rule_matrix))
     # save to csv 
-    with open('BKAI/rule.csv', 'w', encoding='utf-8') as f:
+    with open(pred_config.outfile, 'w', encoding='utf-8') as f:
         writer = csv.writer(f, delimiter=',')
         writer.writerows(rule_matrix)
     
@@ -86,5 +86,6 @@ if __name__ == "__main__":
     init_logger()
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_dir", default="./trained_models/filtering_model", type=str, help="Path to save, load model")
+    parser.add_argument("--outfile", default="./BKAI/rule.csv", type=str, help="Path to save, load model")
     pred_config = parser.parse_args()
     make_rule(pred_config)
