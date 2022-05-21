@@ -16,11 +16,11 @@ def parse_args():
 
     parser.add_argument("--input_file", default="BKAI/word-level/private_test/seq.in", type=str, help="Input file for prediction")
     parser.add_argument("--output_file", default="output/results.csv", type=str, help="Output file for prediction")
-    parser.add_argument("--model_dir", default="./trained_models", type=str, help="Path to save, load model")
+    parser.add_argument("--model_dir", default="./trained_models/filtering_model", type=str, help="Path to save, load model")
 
     parser.add_argument("--batch_size", default=4, type=int, help="Batch size for prediction")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
-    parser.add_argument("--use_rule_based", action="store_true", help="Rule for modify label")
+    parser.add_argument("--use_rule_based", default=True, action="store_true", help="Rule for modify label")
     pred_config = parser.parse_args()
     return pred_config
 
@@ -148,10 +148,15 @@ def main():
     # load model and args
     args = get_args(pred_config)
     device = get_device(pred_config)
-    model = load_model(pred_config, args, device)
+    
     if pred_config.use_rule_based:
         model.args.use_rule_based = True
+        args.use_rule_based = True
+        
+    model = load_model(pred_config, args, device)
+    if pred_config.use_rule_based:
         model.make_rule()
+        
     logger.info(args)
 
     intent_label_lst = get_intent_labels(args)
