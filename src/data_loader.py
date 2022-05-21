@@ -46,12 +46,8 @@ class DataLoader(object):
 
         self.dictionary = {
             'prefix': [
-                (['đang', 'học', 'bài', 'vui', 'lòng'], ['O', 'O', 'O', 'O', 'O']),  
                 ], 
             'suffix': [
-                (['đê'], ['O']),
-                (['chỉ', '1', 'chút', 'thôi','nhé'], ['O', 'O', 'O', 'O', 'O']),
-                (['để', 'chủ', 'nhân', 'tắm'], ['O', 'O', 'O', 'O']),
                 ],
             ('smart.home.check.status', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall'])
@@ -62,32 +58,6 @@ class DataLoader(object):
             
             ('smart.home.check.status', 'B-commandcommand'): [
                 (['báo', 'cáo'], ['B-commandcommand', 'I-commandcommand'])
-            ],
-            
-            ('smart.home.set.color', 'B-allall'): [
-                (['toàn', 'bộ'], ['B-allall', 'I-allall'])
-            ],
-            ('smart.home.set.level', 'B-allall'): [
-                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
-                (['wc'], ['B-roomroom'])
-            ], 
-            ('smart.home.set.percentage', 'B-allall'): [
-                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
-                (['wc'], ['B-roomroom'])
-            ],
-            ('smart.home.increase.level', 'B-allall'): [
-                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
-                (['wc'], ['B-roomroom'])
-            ],
-            ('smart.home.increase.percentage', 'B-allall'): [
-                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
-                (['wc'], ['B-roomroom'])
-            ],
-            ('smart.home.decrease.level', 'B-allall'): [
-                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
-            ],
-            ('smart.home.decrease.percentage', 'B-allall'): [
-                (['toàn', 'bộ'], ['B-allall', 'I-allall']),
             ]
         }
         
