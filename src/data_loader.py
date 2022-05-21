@@ -440,8 +440,8 @@ class JointProcessor(object):
             _words = text.split()  # Some are spaced twice
             words = []
             for word in _words:
-                word = self.unique_normalize(word)
                 if use_spell and word in spell_dict:
+                    word = self.unique_normalize(word)
                     words.append(spell_dict[word])
                 else:
                     words.append(word)

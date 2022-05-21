@@ -20,7 +20,7 @@ def parse_args():
 
     parser.add_argument("--batch_size", default=4, type=int, help="Batch size for prediction")
     parser.add_argument("--no_cuda", action="store_true", help="Avoid using CUDA when available")
-
+    parser.add_argument("--use_rule_based", action="store_true", help="Rule for modify label")
     pred_config = parser.parse_args()
     return pred_config
 
@@ -149,6 +149,8 @@ def main():
     args = get_args(pred_config)
     device = get_device(pred_config)
     model = load_model(pred_config, args, device)
+    if pred_config.use_rule_based:
+        args.use_rule_based = True
     logger.info(args)
 
     intent_label_lst = get_intent_labels(args)
