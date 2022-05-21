@@ -150,7 +150,7 @@ def main():
     device = get_device(pred_config)
     model = load_model(pred_config, args, device)
     if pred_config.use_rule_based:
-        args.use_rule_based = True
+        model.args.use_rule_based = True
         model.make_rule()
     logger.info(args)
 
