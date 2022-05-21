@@ -169,22 +169,22 @@ class JointGLU(RobertaPreTrainedModel):
                     slot_loss = slot_loss_fct(slot_logits.view(-1, self.num_slot_labels), slot_labels_ids.view(-1))
             total_loss += (1 - self.args.intent_loss_coef) * slot_loss
 
-        if self.args.use_rule_based:
-            slot_probs = torch.exp(slot_logits.permute(1, 0, 2))
-            num_words = slot_probs.shape[0]
-            for T in range(num_words):
-                if T == 0:
-                    continue
-                if T < num_words - 1:
-                    # make PAD to be 0
-                    for i in range(slot_probs[T].shape[0]):
-                        slot_probs[T][i][self.args.ignore_index] = 0
-                
-                argmax_idx = torch.argmax(slot_probs[T-1], dim=-1)
-                onehot_vec = F.one_hot(argmax_idx, self.num_slot_labels).float()
-                slot_probs[T] *= torch.matmul(onehot_vec, self.rule_matrix.to(self.device))
-                slot_probs[T] /= torch.sum(slot_probs[T], dim=1, keepdim=True)
-            slot_logits = torch.log(slot_probs.permute(1, 0, 2))
+        # if self.args.use_rule_based:
+        slot_probs = torch.exp(slot_logits.permute(1, 0, 2))
+        num_words = slot_probs.shape[0]
+        for T in range(num_words):
+            if T == 0:
+                continue
+            if T < num_words - 1:
+                # make PAD to be 0
+                for i in range(slot_probs[T].shape[0]):
+                    slot_probs[T][i][self.args.ignore_index] = 0
+            
+            argmax_idx = torch.argmax(slot_probs[T-1], dim=-1)
+            onehot_vec = F.one_hot(argmax_idx, self.num_slot_labels).float()
+            slot_probs[T] *= torch.matmul(onehot_vec, self.rule_matrix.to(self.device))
+            slot_probs[T] /= torch.sum(slot_probs[T], dim=1, keepdim=True)
+        slot_logits = torch.log(slot_probs.permute(1, 0, 2))
             
         outputs = ((intent_logits, slot_logits),) + outputs[2:]  # add hidden states and attention if they are here
 
