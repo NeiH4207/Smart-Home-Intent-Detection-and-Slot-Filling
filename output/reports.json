@@ -1,0 +1,12 @@
+{
+    "smart.home.decrease.level": 35,
+    "smart.home.set.percentage": 40,
+    "smart.home.decrease.percentage": 45,
+    "smart.home.set.color": 45,
+    "greeting": 7,
+    "smart.home.set.level": 40,
+    "smart.home.device.onoff": 45,
+    "smart.home.increase.percentage": 40,
+    "smart.home.increase.level": 40,
+    "smart.home.check.status": 55
+}
