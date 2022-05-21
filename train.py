@@ -154,7 +154,7 @@ if __name__ == "__main__":
     parser.add_argument("--test_type", default="test", type=str, help="Eval type")
     
     parser.add_argument("--speelling_dict_file", 
-                        default="BKAI/word-level/spelling_dict.txt", 
+                        default=None, 
                         type=str, help="Spelling dict file")
     
     args = parser.parse_args()

@@ -401,7 +401,7 @@ class JointProcessor(object):
         """
         return "".join(OrderedDict.fromkeys(text))
 
-    def _create_examples(self, texts, intents, slots, set_type, spell_dict={}, use_spell=True):
+    def _create_examples(self, texts, intents, slots, set_type, spell_dict={}, use_spell=False):
         """Creates examples for the training and dev sets."""
         examples = []
         for i, (text, intent, slot) in enumerate(zip(texts, intents, slots)):
@@ -410,8 +410,8 @@ class JointProcessor(object):
             _words = text.split()  # Some are spaced twice
             words = []
             for word in _words:
-                word = self.unique_normalize(word)
                 if use_spell and word in spell_dict:
+                    word = self.unique_normalize(word)
                     words.append(spell_dict[word])
                 else:
                     words.append(word)
