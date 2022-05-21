@@ -199,8 +199,8 @@ class DataLoader(object):
             for key in self.dictionary:
                 dict_prob[key] = [1 / len(self.dictionary[key]) for _ in range(len(self.dictionary[key]))]
             
-            if intent in ['smart.home.decrease.level', 'smart.home.increase.level', 'smart.home.set.level']:
-                k = int(K)
+            if intent in ['smart.home.increase.level']:
+                k = int(K * 1.2)
             else:
                 k = K
             
