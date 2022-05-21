@@ -197,8 +197,6 @@ def correct_label(pred_config):
     model.eval()
     noise_features = []
     standard_features = []
-    predicted_glu_model_labels = []
-    best_probs = []
     
     with torch.no_grad():
         noise_dataloader = DataLoader(noise_dataset, batch_size=pred_config.batch_size, shuffle=False)
@@ -209,11 +207,6 @@ def correct_label(pred_config):
             slot_label_mask = slot_label_mask.to(device)
             features = model.get_features(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
             noise_features.append(features)
-            intent_logits, _ = model.predict(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
-            best_intent_prob = torch.exp(torch.max(intent_logits, dim=-1).values).detach().cpu().numpy()
-            predicted_model_label = torch.argmax(intent_logits, dim=-1).cpu().numpy()
-            predicted_glu_model_labels.extend(predicted_model_label)
-            best_probs.extend(best_intent_prob)
             
         standard_dataloader = DataLoader(standard_dataset, batch_size=pred_config.batch_size, shuffle=False)
         for i, (input_ids, attention_mask, token_type_ids, slot_label_mask) in tqdm(enumerate(standard_dataloader)):
@@ -232,7 +225,6 @@ def correct_label(pred_config):
     knn = KNeighborsClassifier(n_neighbors=pred_config.k_neighbors)
     knn.fit(standard_features, labels)
     pred_labels = knn.predict(noise_features)
-    predicted_glu_model_labels = [labels[predicted_glu_model_labels[i]] for i in range(len(predicted_glu_model_labels))]
     
     corrected_dict = {}
     num_corrected_same_noise = 0
@@ -251,32 +243,32 @@ def correct_label(pred_config):
     logger.info("Finish predicting")
     
     # Merge the corrected labels with the original labels and save
-    final_label_file = pred_config.label_noise_file.replace('noise', 'final')
-    final_input_file = pred_config.input_noise_file.replace('noise', 'final')
-    final_slot_label_file = pred_config.slot_label_noise_file.replace('noise', 'final')
+    final_label_file = pred_config.label_noise_file.replace('noise', 'filtered')
+    final_input_file = pred_config.input_noise_file.replace('noise', 'filtered')
+    final_slot_label_file = pred_config.slot_label_noise_file.replace('noise', 'filtered')
     
     num_added_data = 0
     
-    with open(final_label_file, 'w', encoding='utf-8') as f:
+    with open(final_label_file, 'a', encoding='utf-8') as f:
         for i in range(len(labels)):
             f.write(labels[i]+'\n')
         for i in range(len(pred_labels)):
-            if pred_labels[i] == predicted_glu_model_labels[i]:
+            if pred_labels[i] == noise_labels[i]:
                 f.write(pred_labels[i]+'\n')
                 num_added_data += 1
             
-    with open(final_input_file, 'w', encoding='utf-8') as f:
+    with open(final_input_file, 'a', encoding='utf-8') as f:
         for i in range(len(stardard_data)):
             f.write(' '.join(stardard_data[i])+'\n')
         for i in range(len(noise_data)):
-            if pred_labels[i] == predicted_glu_model_labels[i]:
+            if pred_labels[i] == noise_labels[i]:
                 f.write(' '.join(noise_data[i])+'\n')
             
-    with open(final_slot_label_file, 'w', encoding='utf-8') as f:
+    with open(final_slot_label_file, 'a', encoding='utf-8') as f:
         for i in range(len(standard_slot_labels)):
             f.write(standard_slot_labels[i]+'\n')
         for i in range(len(noise_slot_labels)):
-            if pred_labels[i] == predicted_glu_model_labels[i]:
+            if pred_labels[i] == noise_labels[i]:
                 f.write(noise_slot_labels[i]+'\n')
     print('num added data: ', num_added_data)
     logger.info("Finish saving")
