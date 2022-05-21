@@ -431,7 +431,7 @@ class JointProcessor(object):
         """
         return "".join(OrderedDict.fromkeys(text))
 
-    def _create_examples(self, texts, intents, slots, set_type, spell_dict={}, use_spell=True):
+    def _create_examples(self, texts, intents, slots, set_type, spell_dict={}, use_spell=False):
         """Creates examples for the training and dev sets."""
         examples = []
         for i, (text, intent, slot) in enumerate(zip(texts, intents, slots)):
