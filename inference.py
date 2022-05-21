@@ -231,6 +231,13 @@ def main():
             for words, slot_preds, intent_pred in zip(lines, slot_preds_list, intent_preds):
                 line = ""
                 line2 = ""
+                for i in range(1, len(words)):
+                    if slot_preds[i][0] == 'B' and slot_preds[i - 1][0] == 'B' and \
+                        slot_preds[i][2:] == slot_preds[i - 1][2:]:
+                        slot_preds[i][0] = 'I'
+                if intent_pred == 'greeting':
+                    slot_preds = ['O'] * len(words)
+                    
                 for word, pred in zip(words, slot_preds):
                     if pred == "O":
                         line = line + word + " "

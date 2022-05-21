@@ -46,10 +46,12 @@ class DataLoader(object):
 
         self.dictionary = {
             'prefix': [
+                (['tiểu', 'đệ', 'giúp'], ['O', 'O', 'O']),
+                (['đại', 'ca', 'hãy'], ['O', 'O', 'O']),
                 ], 
             'suffix': [
                 ],
-            ('smart.home.check.status', 'B-allall'): [
+            ('smart.home.set.level', 'B-allall'): [
                 (['toàn', 'bộ'], ['B-allall', 'I-allall'])
                 ],
             ('smart.home.device.onoff', 'B-allall'): [
