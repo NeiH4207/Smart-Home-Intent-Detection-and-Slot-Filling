@@ -324,6 +324,10 @@ class JointXLMR(RobertaPreTrainedModel):
         if args.use_crf:
             self.crf = CRF(num_tags=self.num_slot_labels, batch_first=True)
         self.alpha = 0.5
+
+        if args.use_rule_based:
+            self.rule_matrix = pd.read_csv(self.args.rule_file, sep=',', header=None).to_numpy()
+            self.rule_matrix = torch.FloatTensor(self.rule_matrix)
     
     def make_rule(self):
         self.rule_matrix = pd.read_csv(self.args.rule_file, sep=',', header=None).to_numpy()
