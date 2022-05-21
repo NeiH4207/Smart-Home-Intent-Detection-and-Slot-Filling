@@ -251,13 +251,13 @@ def correct_label(pred_config):
     logger.info("Finish predicting")
     
     # Merge the corrected labels with the original labels and save
-    final_label_file = pred_config.label_noise_file.replace('noise', 'final')
-    final_input_file = pred_config.input_noise_file.replace('noise', 'final')
-    final_slot_label_file = pred_config.slot_label_noise_file.replace('noise', 'final')
+    final_label_file = pred_config.label_noise_file.replace('noise', 'filtered')
+    final_input_file = pred_config.input_noise_file.replace('noise', 'filtered')
+    final_slot_label_file = pred_config.slot_label_noise_file.replace('noise', 'filtered')
     
     num_added_data = 0
     
-    with open(final_label_file, 'w', encoding='utf-8') as f:
+    with open(final_label_file, 'a', encoding='utf-8') as f:
         for i in range(len(labels)):
             f.write(labels[i]+'\n')
         for i in range(len(pred_labels)):
@@ -265,14 +265,14 @@ def correct_label(pred_config):
                 f.write(pred_labels[i]+'\n')
                 num_added_data += 1
             
-    with open(final_input_file, 'w', encoding='utf-8') as f:
+    with open(final_input_file, 'a', encoding='utf-8') as f:
         for i in range(len(stardard_data)):
             f.write(' '.join(stardard_data[i])+'\n')
         for i in range(len(noise_data)):
             if pred_labels[i] == predicted_glu_model_labels[i]:
                 f.write(' '.join(noise_data[i])+'\n')
             
-    with open(final_slot_label_file, 'w', encoding='utf-8') as f:
+    with open(final_slot_label_file, 'a', encoding='utf-8') as f:
         for i in range(len(standard_slot_labels)):
             f.write(standard_slot_labels[i]+'\n')
         for i in range(len(noise_slot_labels)):
