@@ -136,7 +136,6 @@ class JointGLU(RobertaPreTrainedModel):
         else:
             slot_logits = self.slot_classifier(sequence_output, intent_logits, tmp_attention_mask)
             slot_logits = F.log_softmax(slot_logits, dim=-1)   
-
             
         total_loss = 0
         # 1. Intent Softmax
@@ -202,3 +201,59 @@ class JointGLU(RobertaPreTrainedModel):
         pool_hidden = torch.max(lstm_hidden, dim=1, keepdim=True).values
         pool_hidden = torch.cat([hn, pool_hidden.squeeze(1), outputs.pooler_output], dim=-1)
         return pool_hidden
+    
+    def predict(self, input_ids, attention_mask, token_type_ids):
+        outputs = self.roberta(
+            input_ids, attention_mask=attention_mask, 
+        )
+        attention_x = self._e_attention(outputs[0])
+        emb_attn_x = torch.cat([outputs[0], attention_x], dim=-1)
+        lstm_hidden, (hn, _) = self._lstm_layer(emb_attn_x)
+        hn = torch.cat([hn[0], hn[1]], dim=-1)
+        pool_hidden = torch.max(lstm_hidden, dim=1, keepdim=True).values
+        pool_hidden = torch.cat([hn, pool_hidden.squeeze(1), outputs.pooler_output], dim=-1).unsqueeze(1)
+        linear_intent = self.intent_classifier(pool_hidden)
+        intent_logits = F.log_softmax(linear_intent.squeeze(1), dim=-1)
+        # SLU
+        rep_intent = torch.cat([linear_intent] * input_ids.size(1), dim=1)
+        attn_hidden = self._d_attention(lstm_hidden)
+        com_hidden = torch.cat([rep_intent, attn_hidden], dim=-1)
+        lin_hidden = self._intent_gate_linear(com_hidden)
+        gated_hidden = lin_hidden * lstm_hidden
+        sequence_output = torch.cat((lstm_hidden, gated_hidden), dim=-1)
+        sequence_output = self._lstm_slot_layer(sequence_output)[0]
+        if not self.args.use_attention_mask:
+            tmp_attention_mask = None
+        else:
+            tmp_attention_mask = attention_mask
+
+        if self.args.embedding_type == "hard":
+            hard_intent_logits = torch.zeros(intent_logits.shape)
+            for i, sample in enumerate(intent_logits):
+                max_idx = torch.argmax(sample)
+                hard_intent_logits[i][max_idx] = 1
+            slot_logits = self.slot_classifier(sequence_output, hard_intent_logits, tmp_attention_mask)
+        else:
+            slot_logits = self.slot_classifier(sequence_output, intent_logits, tmp_attention_mask)
+            slot_logits = F.log_softmax(slot_logits, dim=-1)   
+            
+
+        if self.args.use_rule_based:
+            slot_probs = torch.exp(slot_logits.permute(1, 0, 2))
+            num_words = slot_probs.shape[0]
+            for T in range(num_words):
+                if T == 0:
+                    continue
+                if T < num_words - 1:
+                    # make PAD to be 0
+                    for i in range(slot_probs[T].shape[0]):
+                        slot_probs[T][i][self.args.ignore_index] = 0
+                
+                argmax_idx = torch.argmax(slot_probs[T-1], dim=-1)
+                onehot_vec = F.one_hot(argmax_idx, self.num_slot_labels).float()
+                slot_probs[T] *= torch.matmul(onehot_vec, self.rule_matrix.to(self.device))
+                slot_probs[T] /= torch.sum(slot_probs[T], dim=1, keepdim=True)
+            slot_logits = torch.log(slot_probs.permute(1, 0, 2))
+        
+        outputs = (intent_logits, slot_logits)
+        return outputs

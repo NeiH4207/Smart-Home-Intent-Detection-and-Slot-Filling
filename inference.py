@@ -14,7 +14,7 @@ def parse_args():
     init_logger()
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--input_file", default="BKAI/word-level/test/seq.in", type=str, help="Input file for prediction")
+    parser.add_argument("--input_file", default="BKAI/word-level/private_test/seq.in", type=str, help="Input file for prediction")
     parser.add_argument("--output_file", default="output/results.csv", type=str, help="Output file for prediction")
     parser.add_argument("--model_dir", default="./trained_models", type=str, help="Path to save, load model")
 
@@ -52,7 +52,6 @@ def load_model(pred_config, args, device):
 
     return model
 
-
 def read_input_file(pred_config):
     lines = []
     with open(pred_config.input_file, "r", encoding="utf-8") as f:
@@ -62,7 +61,6 @@ def read_input_file(pred_config):
             lines.append(words)
 
     return lines
-
 
 def convert_input_file_to_tensor_dataset(
     lines,

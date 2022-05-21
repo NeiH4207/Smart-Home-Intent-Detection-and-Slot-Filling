@@ -599,7 +599,7 @@ def load_and_cache_examples(args, tokenizer, mode, spell_dict={}):
         if mode in ["train", "augment_train", "augment_train_val", "augment_val", "augment_train_val_plus",
                     "train_val", "train_val_test", "dev"]:
             examples = processor.get_examples(mode, spell_dict=spell_dict)
-        elif mode == "test":
+        elif mode == "test" or "private_test":
             examples = processor.get_examples(mode, spell_dict=spell_dict)
         else:
             raise Exception("For mode {}, Only train, dev, test is available".format(mode))
