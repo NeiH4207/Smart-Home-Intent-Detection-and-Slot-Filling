@@ -158,20 +158,21 @@ Example:
         -k 7 --seed 11
     ```
 
-   2. Generate filtering model
-    ```
-        rm ./BKAI/cached_*
-        
-        python3 Smart-Home-Intent-Detection-and-Slot-Filling/train.py --token_level word-level --model_type phobert \
-        --model_dir ./drive/MyDrive/Colab/trained_models/filtering_model_1 --data_dir BKAI \
-        --intent_label_file intent_label.txt --slot_label_file slot_label.txt \
-        --rule_file ./BKAI/rule.csv --train_type train_val \
-        --val_type augment_val --test_type augment_val --seed 7 \
-        --do_train --num_train_epochs 50 --tuning_metric mean_intent_slot \
-        --use_crf --gpu_id 0 --embedding_type soft --intent_loss_coef 0.7 \
-        --learning_rate 0.00005 --dropout_rate 0.5 --attention_embedding_size 256 \
-        --save_steps 69 --logging_steps 69 --train_batch_size 32
-    ```
+2. Generate filtering model
+```
+    rm ./BKAI/cached_*
+
+    python3 Smart-Home-Intent-Detection-and-Slot-Filling/train.py --token_level word-level --model_type phobert \
+    --model_dir ./drive/MyDrive/Colab/trained_models/filtering_model_1 --data_dir BKAI \
+    --intent_label_file intent_label.txt --slot_label_file slot_label.txt \
+    --rule_file ./BKAI/rule.csv --train_type train_val \
+    --val_type augment_val --test_type augment_val --seed 7 \
+    --do_train --num_train_epochs 50 --tuning_metric mean_intent_slot \
+    --use_crf --gpu_id 0 --embedding_type soft --intent_loss_coef 0.7 \
+    --learning_rate 0.00005 --dropout_rate 0.5 --attention_embedding_size 256 \
+    --save_steps 69 --logging_steps 69 --train_batch_size 32
+```
+    
    3. Filtering
     ```
         python Smart-Home-Intent-Detection-and-Slot-Filling/filter_data.py --input_file ./BKAI/word-level/dev/seq.in \
